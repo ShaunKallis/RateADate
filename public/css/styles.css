@@ -1,0 +1,76 @@
+body{
+    min-height: 100%;
+    color:white;
+    margin:50px;
+    background-image: url("../img/theRealSanders.jpg");
+    /*background-color: black;*/
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: left bottom;
+    text-shadow: 1px 1px 1px black, 
+                -1px 1px 1px black,
+                1px -1px 1px black;
+    text-align:center;
+}
+
+#textbox{
+    border: solid 5px yellow;
+    background: linear-gradient(red, yellow);
+}
+
+table
+{
+    margin-left:auto; 
+    margin-right:auto;
+}
+
+.jumbotron{
+    background-image: url("../img/HeartsFuzz.jpg");
+    background-repeat:no-repeat;
+    background-position: center center;
+}
+
+.btn-outline-danger{
+    background-color: white;
+    color:black;
+}
+
+h1 {
+    color:royalblue;
+    background-color:black;
+    margin-left: 20px;
+    font-family: 'Courier New', cursive;
+}
+
+#nava {
+    padding: 20px;
+    color:darkgrey;
+    box-shadow: 5px 5px 10px #999;
+}
+
+html {
+  height: 100%;
+}
+
+#mainpics {
+    border-radius: 50px;
+    /*display: block;*/
+    margin-left: auto;
+    margin-right: auto;
+    height: 400px;
+}
+
+footer {
+    text-align: center;
+    display:flex;
+    right:0px;
+    background-image: url("../img/bottom.jpg");
+    padding: 20px;
+    width: 430px;
+    height: 230px;
+    margin: auto;
+    margin: 25px auto;
+    /*text-shadow: 1px 1px 1px black, */
+    /*            -1px 1px 1px black,*/
+    /*            1px -1px 1px black;*/
+}

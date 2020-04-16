@@ -1,0 +1,42 @@
+
+<!-- From Lab 10, incomplete, need app.js calls, ctrl-f "admin" -->
+<%- include('partials/header'); -%>
+        
+        <script>
+        //     $(document).ready(function(){
+        //         $(".removeAuthor").on("click", function(event){   
+        //             if (confirm("Delete Author?") == false){
+        //                 event.preventDefault(); //prevent default behavior of link
+        //             }
+        //         });
+        //     }); //doc ready
+            function deleteConfirm(){
+                if (!confirm("Delete Product?")){
+                        event.preventDefault(); //prevent default behavior of link
+                    }
+            }
+        </script>
+    </head>
+    <body>
+        <h1> Admin Section </h1>
+        
+        <form action="/logout">
+        <button> Logout </button>
+        </form>
+        
+        <form action="/addProduct">
+        <button> Add New Product </button>
+        </form>
+        
+        <form action="/adminStats">
+        <button> Admin Stats </button>
+        </form>
+        
+        <h3> Products</h3>
+        <% productList.forEach(function(productList){ %>
+            [<a href="/updateProduct?pokemonName=<%= productList.name %>">UPDATE</a>] 
+            [<a onclick="deleteConfirm()" class="removeProduct" href="/deleteProduct?pokemonName=<%= productList.name %>">DELETE</a>] 
+            <%= productList.name %> <%= productList.pokemonID %> <br>
+        <% }) %>
+    </body>
+</html>

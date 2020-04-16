@@ -1,0 +1,41 @@
+
+<!-- From Lab 10, incomplete, need app.js calls, ctrl-f "login" -->
+<%- include('partials/header'); -%>
+
+        <script>
+            $(document).ready(function() {
+                $("#loginBtn").on("click", function(){
+                    $.ajax({
+                        method: "POST",
+                        url: "/adminLoginProcess",
+                        dataType: "json",
+                        data: { "username":$("#username").val(),
+                                "password":$("#password").val()},
+                        success: function(result,status) {
+                            //alert(result);
+                            if (!result){
+                                alert("Wrong credentials!");
+                            }else{
+                                location.href = "/admin"; //redirects to admin route
+                            }
+                        }
+                    });//ajax
+                }); //click
+            }); //document.ready
+        </script>
+    </head>
+    
+    <body>
+                <h1> Admin Login Screen </h1>
+        
+        
+            Username: <input type="text" name="username" id="username"> <br>
+            Password: <input type="password" name="password" id="password"> <br>
+            
+            <br>
+            <button id="loginBtn"> Login! </button>
+            <br>
+            <a href="/">Back to Welcome Page</a>
+        
+    </body>
+</html>

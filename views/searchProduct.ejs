@@ -1,0 +1,42 @@
+<%- include('partials/header'); -%> 
+    </head>
+    <body>
+        
+        <h1> Person Search </h1>
+
+
+        <form action="/products">
+   
+            Keyword: <input type="text" name="keyword">
+            
+            Category: 
+            <select name="category">
+                <option value=""> Select One </option>
+                
+                <% categories.forEach(function(i){ %>
+                
+                    <option> <%=i.category%>  </option>
+                
+                <% }); %>
+                
+            </select><br><br>
+            
+            Price: <input type="number" name="price"> <br><br>
+            
+            <button> Search! </button>
+
+        </form>
+        
+        <br>
+        <form action="/profilePage">
+            <button>User Profile</button>
+        </form>
+        
+        <br>
+        <form action="/logout">
+        <button> Logout </button>
+        </form>
+
+    </body>
+
+<%- include('partials/footer'); -%>

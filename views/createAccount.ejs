@@ -1,0 +1,10 @@
+<%- include('partials/header') -%>
+<h1>Create a new account time!</h1>
+<form action="/index" method="POST">
+    <br>
+    <input type="text" name="username" placeholder="Enter Username"><br>
+    <input type="text" name="password" placeholder="Enter Password"><br>
+    <input type="text" name="email" placeholder="Enter Email" minlength="6" required><br>
+    <button>Submit</button>
+</form>
+<%- include('partials/footer') -%>

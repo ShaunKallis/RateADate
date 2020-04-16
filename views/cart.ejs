@@ -1,0 +1,35 @@
+<%- include('partials/header'); -%>
+    </head>
+    <body>
+         <h1> Shopping Cart </h1>
+    <form action = /logout>
+<button> Logout </button>
+</form>
+<table>
+  <tr>
+    <th>Item</th>
+    <th>Quantity</th>
+    <th>Price</th>
+  </tr>
+  <%items.forEach(function(item){%>
+  <tr>
+    <td><%= item["productName"]%></td>
+    <td><%= item["quantity"]%></td>
+    <td>$<%= item["price"]%></td>
+  </tr>
+  <%})%>
+</table>
+<br>
+<table>
+  <tr>
+    <th>Total: $</th>
+    <td><%= total%></td>
+  </tr>
+</table>
+<br><br>
+<form action = /checkout>
+<button> Cick here to purchase! </button>
+</form>
+
+</body>
+<%- include('partials/footer'); -%>

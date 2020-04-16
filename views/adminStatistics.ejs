@@ -1,0 +1,39 @@
+<!DOCTYPE html>  
+<%- include('partials/header'); -%>
+    <h1> Statistics </h1>
+        <script>
+            $(document).ready(function() {
+                $(".command").on("click", function(){
+                    label = `${this.id} price: $`;
+                    $.ajax({
+                        method: "POST",
+                        url: "/stats",
+                        dataType: "json",
+                        data: { "command":this.id},
+                        success: function(result,status) {
+                            //alert(result);
+                            label += result["result"];
+                            $("#results").html(label)
+                        }
+                    });//ajax
+                }); //click
+            }); //document.ready
+        </script>
+    </head>
+    
+    <body>
+            <button class="command" id="MAX"> Get maximum store price</button>
+            <br>
+            <button class="command" id="MIN"> Get minimum store price</button>
+            <br>
+            <button class="command" id="AVG"> Get average store price</button>
+            <br>
+            <br>
+            <div id="results"></div>
+            <br>
+            <form action="/logout">
+        <button> Logout </button>
+        </form>
+        
+    </body>
+<%- include('partials/footer'); -%> 
