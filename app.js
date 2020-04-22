@@ -1,6 +1,3 @@
-const mysql = require("mysql")
-
-var sleep = require('sleep');
 
 const request = require("request");
 var cookieParser = require('cookie-parser');
@@ -567,17 +564,6 @@ function getPokemon(keyword){
     });
 }
 
-
-//values in red must be updated
-function dbConnection(){
-  let conn = mysql.createConnection({
-                host: "cst336db.space",
-                user: "cst336_dbUser7", // cst336_dbUser
-                password: "fo14c3",    // secret
-                database: "cst336_db7"  // cst336_db
-    }); //createConnection
-    return conn;
-}
 
 //starting server
 app.listen(process.env.PORT, process.env.IP, function(){
