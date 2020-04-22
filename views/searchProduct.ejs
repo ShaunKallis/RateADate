@@ -2,26 +2,14 @@
     </head>
     <body>
         
-        <h1> Person Search </h1>
+        <h1> Person Search <br>
+        <p style="font-size:18px;">Leave keyword field empty and hit search to see all Users</p>
+        </h1>
 
 
         <form action="/products">
    
             Keyword: <input type="text" name="keyword">
-            
-            Category: 
-            <select name="category">
-                <option value=""> Select One </option>
-                
-                <% categories.forEach(function(i){ %>
-                
-                    <option> <%=i.category%>  </option>
-                
-                <% }); %>
-                
-            </select><br><br>
-            
-            Price: <input type="number" name="price"> <br><br>
             
             <button> Search! </button>
 

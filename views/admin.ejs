@@ -1,5 +1,5 @@
 
-<!-- From Lab 10, incomplete, need app.js calls, ctrl-f "admin" -->
+
 <%- include('partials/header'); -%>
         
         <script>
@@ -28,9 +28,9 @@
         <button> Add New Product </button>
         </form>
         
-        <form action="/adminStats">
-        <button> Admin Stats </button>
-        </form>
+        <!--<form action="/adminStats">-->
+        <!--<button> Admin Stats </button>-->
+        <!--</form>-->
         
         <h3> Products</h3>
         <% productList.forEach(function(productList){ %>
@@ -39,4 +39,3 @@
             <%= productList.name %> <%= productList.pokemonID %> <br>
         <% }) %>
     </body>
-</html>

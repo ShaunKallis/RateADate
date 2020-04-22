@@ -1,43 +1,21 @@
-<!-- From Lab 9, incomplete, need app.js calls, change to product info, ctrl-f "quotes" -->
 <%- include('partials/header'); -%>
 <script>
-    // $(document).ready(function(){
-        
-            
-    //         $("a").on("click", function(){
-    //             //alert("test"); 
-    //             $.ajax({
-            
-    //                 method: "GET",
-    //                 url: "/productInfo?=",
-    //                 dataType: "json",
-    //                 data: { "productId": $(this).attr("id")},
-    //                 success: function(result,status) {
-    //                   //alert(result[0].firstName);
-    //                   $("#productName").html(result[0].productName);
-    //                   $("#picture").html(`<img src='${result[0].portrait}' width='450'/>`);
-                    
-    //                   $('#authorModal').modal("show");
-    //                 }
-            
-    //             });//ajax
-    //         })
-    // });
-            $(document).ready(function() {
-                $(".add").on("click", function(){
-                    $.ajax({
-                        method: "POST",
-                        url: "/addToCart",
-                        dataType: "json",
-                        data: { "product":this.id},
-                        success: function(result,status) {
-                            alert(result["message"]);
-                        }
-                    });//ajax
-                }); //click
-            }); //document.ready
-    </script>
-    </head>
+    
+    $(document).ready(function() {
+        $(".add").on("click", function(){
+            $.ajax({
+                method: "POST",
+                url: "/addToCart",
+                dataType: "json",
+                data: { "pokemonName":this.id, "quantityChosen":document.getElementById("quantityChosen" + this.id).value},
+                success: function(result,status) {
+                    alert(result["message"]);
+                }
+            });//ajax
+        }); //click
+    }); //document.ready
+</script>
+</head>
     <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <div class="navbar-header">
@@ -48,15 +26,9 @@
             </div>
     </nav>
     
-    <!--<header class="jumbotron">-->
-    <!--        <div class="container">-->
-    <!--            <h1>Searched Pokemon</h1>-->
-    <!--            <p>Current Listings</p>-->
-    <!--        </div>-->
-    <!--</header>-->
     
             <div class="container">
-                <h1>Searched Profiles</h1>
+                <h1>Searched Pokemon</h1>
                 <p>Current Listings</p>
             </div>
     
@@ -77,7 +49,8 @@
                         <div class="w3-show-inline-block">
                         <div class="w3-bar">
                             <a href="/productDetails/<%= record.name %>" class="btn btn-primary">Info</a>
-                            <button id="<%= record._id %>" class="add">Add</button>
+                            <button id="<%= record.name %>" class="add">Set Quantity</button>
+                            <input type="number" id="quantityChosen<%=record.name%>" min="0" max="<%= record.quantity %>" value="0" onkeydown="return false"/>
                         </div>
                         </div>
                     </div>
@@ -85,31 +58,6 @@
             </div>
         <% }) %>
     </div>
-    
-    <br>
-    
-    <body>
-        
-        <h1> Products Found:  </h1>
-
-        <% records.forEach( function(record){ %> 
-        
-            <img src = <%= record.imageURL %> width = 300px height = 250px> <br>
-            <i><%= record.name %></i> <br>
-            <!--Number: <%=record.pokemonID%><br>-->
-            <!--Height: <%=record.height%><br>-->
-            <!--Weight: <%=record.weight%><br>-->
-            Quantity Available: <%=record.quantity%><br>
-            <!--Types: <%=record.type1%><br>-->
-            Price: $<%=record.price%><br>
-            <!--Testing-->
-            <p>
-                <a href="/productDetails/<%= record.name %>" class="btn btn-primary">Info</a>
-            </p>
-            <button id="<%= record._id %>" class="add"> Add to cart </button>
-            <br><br>
-        <% })  %>
-        
         
         <form action="/cart">
         <button> Go to cart </button>
@@ -123,43 +71,6 @@
         <button> Logout </button>
         </form>
         
-        
-       
-        
-
-
-<!-- Button trigger modal -->
-<!--<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">-->
-<!--  Launch demo modal-->
-<!--</button>-->
-
-<!-- Modal -->
-<!--<div class="modal fade" id="authorModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">-->
-<!--  <div class="modal-dialog" role="document">-->
-<!--    <div class="modal-content">-->
-<!--      <div class="modal-header">-->
-<!--        <h5 class="modal-title" id="exampleModalLabel"><h1 id="authorName"></h1></h5>-->
-<!--        <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--          <span aria-hidden="true">&times;</span>-->
-<!--        </button>-->
-<!--      </div>-->
-<!--      <div class="modal-body">-->
-        
-<!--         <div>-->
-            
-<!--            <h1 id="productName"></h1>-->
-<!--            <div id="picture" ></div>-->
-            
-            
-<!--        </div>-->
-        
-<!--      </div>-->
-<!--      <div class="modal-footer">-->
-<!--        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->
 
 
          

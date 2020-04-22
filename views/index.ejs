@@ -3,15 +3,15 @@
     </head>
     
     <body>
-            <h1 class="jumbotron">Rate - A - Date</h1>
-            Avoid disaster, improve yourself, find love.
-            <br>
-            <br>
+            <h1 class="jumbotron">Pockyman's Store!<br>
+            <p style="font-size:18px;">This is a shop to buy Pokemon</p></h1>
             <br>
             
             <button id="submitBtn1" class="btn btn-outline-danger"> User Sign In </button><br>
             
-            <button id="submitBtn2" class="btn btn-outline-danger"> Admin Sign In </button><br>
+            <button id="submitBtn2" class="btn btn-outline-danger"> Admin Sign In </button><br><br>
+            
+            <button id="submitBtn3" class="btn btn-outline-danger"> Create Account </button><br>
     
     <script>
             $("#submitBtn1").on("click", function()
@@ -22,10 +22,11 @@
             {
                 location.href = "/adminLogin";
             });
+            $("#submitBtn3").on("click", function()
+            {
+                location.href = "/createAccount";
+            });
         </script>
-        
-        <br>
-        <a href="/createAccount">Create an Account</a>
         
     </body>
     
