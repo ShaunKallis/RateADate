@@ -221,9 +221,9 @@ app.get("/deleteProduct", isAdminAuthenticated, async function(req, res){
 });
 
 
-app.post("/stats", isAdminAuthenticated, async function(req, res) {
-    res.send(await getStats(req.body.command));
-});
+// app.post("/stats", isAdminAuthenticated, async function(req, res) {
+//     res.send(await getStats(req.body.command));
+// });
 
 app.get("/adminStats", isAdminAuthenticated, function(req, res){
 
@@ -329,52 +329,27 @@ async function deleteProduct(pokemonName){
 async function clearCart(username){
     var user = await client.db("userdb").collection("users").findOne({"username": username});
     var index;
-    for(index = 0; index < user.cart.length; index++){
-        pokemonName = user.cart[index][0];
-        var pokemon = await client.db("pokemondb").collection("pokemon").findOne({"name": user.cart[index][0]});
-        pokemon.quantity -= user.cart[index][2];
-        await client.db("pokemondb").collection("pokemon").updateOne({"name": pokemon.name}, {$set: {"quantity": pokemon.quantity}});
+    var result;
+    var pokemonName;
+    try{
+        for(index = 0; index < user.cart.length; index++){
+            pokemonName = user.cart[index][0];
+            var pokemon = await client.db("pokemondb").collection("pokemon").findOne({"name": user.cart[index][0]});
+            pokemon.quantity -= user.cart[index][2];
+            await client.db("pokemondb").collection("pokemon").updateOne({"name": pokemon.name}, {$set: {"quantity": pokemon.quantity}});
+        }
+    }catch(e){
+        console.log("cart is empty");
     }
-    
     result = await client.db("userdb").collection("users").updateOne({"username": username}, {$unset: {cart: null}});
 }
 
-function getStats(command){
-    
-    let conn = dbConnection();
-    return new Promise(function(resolve, reject){
-        conn.connect(function(err) {
-           if (err) throw err;
-           console.log("Connected!");
-           let sql;
-           let aggregate;
-            if(command == "MAX"){
-                aggregate = "MAX(price)"
-                sql = `SELECT ${aggregate} FROM products`;
-            } else if(command == "AVG"){
-                aggregate = "AVG(price)"
-            } else {
-                aggregate = "MIN(price)"
-            }
-            sql = `SELECT ${aggregate} FROM products`;
-            
-            conn.query(sql, function (err, rows, fields) {
-                if (err) throw err;
-                //res.send(rows);
-                conn.end();
-                // console.log(rows[0][aggregate]);
-                resolve({"result":rows[0][aggregate]});
-            });
-        
-        });//connect
-    });//promise
-}//getStats func
-
 app.get("/searchProduct", isUserAuthenticated, async function(req, res){
 
-  let categories = await getCategories();
+//   let categories = await getCategories();
   //console.log(categories);
-  res.render("searchProduct", {"categories":categories});
+//   res.render("searchProduct", {"categories":categories});
+    res.render("searchProduct");
 
 });
 
@@ -468,35 +443,10 @@ app.get("/createAccount", function(req, res){
 
 app.get("/productInfo", isUserAuthenticated, async function(req, res){
     
-   let rows = await getProductInfo(req.query.productID);
+   let rows = await getProduct(req.query.productID);
   //res.render("products", {"records":rows});
     res.send(rows)
 });//product
-
-function getProductInfo(productID){
-    let conn = dbConnection();
-    
-    
-    return new Promise(function(resolve, reject){
-        conn.connect(function(err) {
-           if (err) throw err;
-           console.log("Connected!");
-        
-           let sql = `SELECT * 
-                      FROM products
-                      WHERE productID = ${productID}`;
-            console.log(sql);        
-           conn.query(sql, function (err, rows, fields) {
-              if (err) throw err;
-              //res.send(rows);
-              conn.end();
-              resolve(rows);
-           });
-        
-        });//connect
-    });//promise
-    
-}
 
 async function getProduct(pokemonName){
     var result;
@@ -510,31 +460,6 @@ async function getProduct(pokemonName){
     console.log(result);
     return result;
 }//getproduct
-
-function getCategories(){
-    
-    let conn = dbConnection();
-    
-    return new Promise(function(resolve, reject){
-        conn.connect(function(err) {
-           if (err) throw err;
-           console.log("Connected!");
-        
-           let sql = `SELECT DISTINCT category 
-                      FROM products
-                      ORDER BY category`;
-        
-           conn.query(sql, function (err, rows, fields) {
-              if (err) throw err;
-              //res.send(rows);
-              conn.end();
-              resolve(rows);
-           });
-        
-        });//connect
-    });//promise
-    
-}//getCategories
 
 async function getCart(username){
     const result = await client.db("userdb").collection("users").findOne({"username": username});
