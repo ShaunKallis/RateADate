@@ -10,6 +10,7 @@ const scrypt = require('scrypt');
 
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://mRidge:duzSEpQQh4fTIqSm@cluster0-2dcbj.mongodb.net/test?retryWrites=true&w=majority";
+const database_name = "RateADate";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect();
 
@@ -49,9 +50,10 @@ function isUserAuthenticated(req, res, next) {
 }
 
 async function userLoginAttempt(username, password) {
-    var result = await client.db("userdb").collection("users").findOne({
+    var result = await client.db(database_name).collection("users").findOne({
         "username": username
     });
+
     console.log(`user found: ${result}`);
     if (result == null) {
         return false;
@@ -69,7 +71,7 @@ async function userLoginAttempt(username, password) {
 }
 
 async function adminLoginAttempt(username, password) {
-    var result = await client.db("userdb").collection("users").findOne({
+    var result = await client.db(database_name).collection("users").findOne({
         "username": username,
         "password": password,
         "admin": true
@@ -245,7 +247,7 @@ app.get("/adminStats", isAdminAuthenticated, function (req, res) {
 function hash_password(password, salt) {
     let params = { "N": 16, "r": 1, "p": 1 };
     let length = 64;
-    return scrypt.hashSync(password, params, length, salt);
+    return scrypt.hashSync(password, params, length, salt).toString("base64");
 }
 
 
@@ -272,7 +274,7 @@ async function addToCart(username, pokemonName, quantityChosen) {
     quantityChosen = parseInt(quantityChosen);
     var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": pokemonName });
 
-    var result = await client.db("userdb").collection("users").findOne({ "username": username });
+    var result = await client.db(database_name).collection("users").findOne({ "username": username });
     console.log(result);
     if (result.cart == null) {
         console.log("empty array");
@@ -299,7 +301,7 @@ async function addToCart(username, pokemonName, quantityChosen) {
     for (index = 0; index < result.cart.length; index++) {
         console.log(result.cart[index]);
     }
-    result = await client.db("userdb").collection("users").updateOne(
+    result = await client.db(database_name).collection("users").updateOne(
         { "username": username },
         {
             $set: { "cart": result.cart }
@@ -308,16 +310,16 @@ async function addToCart(username, pokemonName, quantityChosen) {
 
 async function createUser(username, password, email, bio) {
     console.log(`createUser called`);
-    let result = await client.db("userdb").collection("users").findOne({ "username": username });
+    let result = await client.db("RateADate").collection("users").findOne({ "username": username });
     if (result != null) {
         // do something to signify error creating account
         console.log(`user found with username: ${username}`);
     } else {
         let password_salt = crypto.randomBytes(128).toString("base64");
-        console.log(password_salt);
+        // console.log(`salt generated: ${password_salt}`);
         let password_hash = hash_password(password, password_salt);
 
-        result = await client.db("userdb").collection("users").insertOne({
+        result = await client.db(database_name).collection("users").insertOne({
             "username": username,
             "password_hash": password_hash,
             "password_salt": password_salt,
@@ -349,7 +351,7 @@ async function deleteProduct(pokemonName) {
 }
 
 async function clearCart(username) {
-    var user = await client.db("userdb").collection("users").findOne({ "username": username });
+    var user = await client.db(database_name).collection("users").findOne({ "username": username });
     var index;
     var result;
     var pokemonName;
@@ -363,7 +365,7 @@ async function clearCart(username) {
     } catch (e) {
         console.log("cart is empty");
     }
-    result = await client.db("userdb").collection("users").updateOne({ "username": username }, { $unset: { cart: null } });
+    result = await client.db(database_name).collection("users").updateOne({ "username": username }, { $unset: { cart: null } });
 }
 
 app.get("/searchProduct", isUserAuthenticated, async function (req, res) {
@@ -419,7 +421,7 @@ app.get("/profilePage", async function (req, res) {
     //var cUser = req.cookie.cookieUser;
     var cUser = req.session.name;
     console.log(cUser);
-    const userProf = await client.db("userdb").collection("users").findOne({ username: cUser });
+    const userProf = await client.db(database_name).collection("users").findOne({ username: cUser });
     console.log(userProf);
     res.render("profilePage", { "userProf": userProf })
 })
@@ -438,25 +440,6 @@ app.post("/index", function (req, res) {
     //Redirect to Main Page
     res.redirect("/")
 })
-
-//Micheals Function
-async function createUser(username, password, email, bio) {
-    console.log(`createUser called`);
-    const result = await client.db("userdb").collection("users").findOne({ "username": username });
-    if (result != null) {
-        // do something to signify error creating account
-        console.log(`user found with username: ${username}`);
-    } else {
-        const result = await client.db("userdb").collection("users").insertOne({
-            "username": username,
-            "password": password,
-            "email": email,
-            "bio": bio
-        });
-        console.log(`user created with username: ${username}`);
-    }
-    return result;
-}
 
 //Create Account Route
 app.get("/createAccount", function (req, res) {
@@ -484,7 +467,7 @@ async function getProduct(pokemonName) {
 }//getproduct
 
 async function getCart(username) {
-    const result = await client.db("userdb").collection("users").findOne({ "username": username });
+    const result = await client.db(database_name).collection("users").findOne({ "username": username });
     console.log(`getCart: ${result}`);
     return result.cart;
 }
