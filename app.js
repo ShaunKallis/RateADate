@@ -5,10 +5,12 @@ var cookieParser = require('cookie-parser');
 const express = require("express");
 const app = express();
 const session = require('express-session');
+const crypto = require('crypto');
+const scrypt = require('scrypt');
 
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://mRidge:duzSEpQQh4fTIqSm@cluster0-2dcbj.mongodb.net/test?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true});
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect();
 
 app.use(cookieParser());
@@ -18,206 +20,212 @@ app.use(express.static("public")); //folder for images, css, js
 app.use(express.urlencoded()); // used to parse data sent using the POST method
 // Recall all middleware for app.use executes every time before routes
 
-app.use(session({ 
-    secret: 'keyboard cat', 
-    cookie: { maxAge: 6000000 }}))
+app.use(session({
+    secret: 'keyboard cat',
+    cookie: { maxAge: 6000000 }
+}))
 
 app.use(myMiddleware);
-function myMiddleware(req, res, next){
+function myMiddleware(req, res, next) {
     console.log(new Date());
     next(); // passes control to back to server to do the next thing.
 }
 
 
-function isAdminAuthenticated(req, res, next){
-    if(!req.session.adminAuthenticated){
+function isAdminAuthenticated(req, res, next) {
+    if (!req.session.adminAuthenticated) {
         res.redirect('/adminLogin');
     } else {
         next();
     }
 }
 
-function isUserAuthenticated(req, res, next){
-    if(!req.session.userAuthenticated){
+function isUserAuthenticated(req, res, next) {
+    if (!req.session.userAuthenticated) {
         res.redirect('/userLogin');
     } else {
         next();
     }
 }
 
-async function userLoginAttempt(username, password){
+async function userLoginAttempt(username, password) {
     var result = await client.db("userdb").collection("users").findOne({
-        "username": username,
-        "password": password
+        "username": username
     });
     console.log(`user found: ${result}`);
-    if(result != null){
-        return true;
-    } else{
+    if (result == null) {
         return false;
     }
+
+    let password_salt = result.password_salt;
+    let new_hash = hash_password(password, password_salt);
+
+    if (new_hash != result.password_hash) {
+        return false;
+    }
+
+    return true;
+
 }
 
-async function adminLoginAttempt(username, password){
+async function adminLoginAttempt(username, password) {
     var result = await client.db("userdb").collection("users").findOne({
         "username": username,
         "password": password,
         "admin": true
     });
     console.log(`admin found: ${result}`);
-    if(result != null){
+    if (result != null) {
         return true;
-    } else{
+    } else {
         return false;
     }
 }
 
 //routes
-app.get("/", function(req, res){
+app.get("/", function (req, res) {
 
     res.render("index");
 
 });
-app.get("/userLogin", async function(req, res)
-{
+app.get("/userLogin", async function (req, res) {
     res.render("userLogin");
 });
-app.get("/adminLogin", async function(req, res)
-{
+app.get("/adminLogin", async function (req, res) {
     res.render("adminLogin");
 });
 
 
 
 // from lab 10, admin side of page
-app.get("/admin", isAdminAuthenticated, async function(req, res){
+app.get("/admin", isAdminAuthenticated, async function (req, res) {
     console.log("authenticated: ", req.session.authenticated);
-    if (req.session.adminAuthenticated){ 
+    if (req.session.adminAuthenticated) {
         let productList = await getProductList();
-        res.render("admin", {"productList":productList});                
-    }else{                         //if user hasn't authenticated
+        res.render("admin", { "productList": productList });
+    } else {                         //if user hasn't authenticated
         res.render("adminLogin");                  //send them to the login screen
     }
 });
 
-app.post("/adminLoginProcess", function(req, res) {
-    adminLoginAttempt(req.body.username, req.body.password).then(result =>{
+app.post("/adminLoginProcess", function (req, res) {
+    adminLoginAttempt(req.body.username, req.body.password).then(result => {
         console.log(`result of login attempt: ${result}`);
-        if(result == true){
+        if (result == true) {
             req.session.adminAuthenticated = true;
-            res.send({"loginSuccess":true});
+            res.send({ "loginSuccess": true });
         } else {
-           res.send(false);
+            res.send(false);
         }
     });
 });
 
-app.post("/userLoginProcess", function(req, res) {
-    userLoginAttempt(req.body.username, req.body.password).then(result =>{
+app.post("/userLoginProcess", function (req, res) {
+    userLoginAttempt(req.body.username, req.body.password).then(result => {
         console.log(`result of login attempt: ${result}`);
-        if(result == true){
+        if (result == true) {
             console.log(req.body.username);
             req.session.name = req.body.username;
             console.log(req.session.name);
             req.session.userAuthenticated = true;
-            res.send({"loginSuccess":true});
+            res.send({ "loginSuccess": true });
         } else {
-           res.send(false);
+            res.send(false);
         }
     });
 });
 
 //Johnny Cookie Functions
-function setCookie(name,value,days) {
+function setCookie(name, value, days) {
     var expires = "";
     if (days) {
         var date = new Date();
-        date.setTime(date.getTime() + (days*24*60*60*1000));
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
     }
-    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
 function getCookie(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
+    for (var i = 0; i < ca.length; i++) {
         var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
     return null;
 }
-function eraseCookie(name) {   
-    document.cookie = name+'=; Max-Age=-99999999;';  
+function eraseCookie(name) {
+    document.cookie = name + '=; Max-Age=-99999999;';
 }
 
 
-app.post("/addToCart", isUserAuthenticated, async function(req, res){
+app.post("/addToCart", isUserAuthenticated, async function (req, res) {
     const result = await addToCart(req.session.name, req.body.pokemonName, req.body.quantityChosen);
     console.log(`added to cart`);
 })
 
-app.get("/logout", function(req, res){
+app.get("/logout", function (req, res) {
     req.session.destroy();
     res.redirect("/");   //taking user back to login screen
 });
-app.get("/addProduct", isAdminAuthenticated, async function(req, res){
-    if (req.session.adminAuthenticated){ 
+app.get("/addProduct", isAdminAuthenticated, async function (req, res) {
+    if (req.session.adminAuthenticated) {
         // res.render("newProduct");
-        let keyword = "unown"; 
+        let keyword = "unown";
         console.log(`keyword: ${req.query.keyword}`);
-        if(req.query.keyword != null ){
+        if (req.query.keyword != null) {
             console.log(`a`);
-            if(req.query.keyword.localeCompare("") != 0){
+            if (req.query.keyword.localeCompare("") != 0) {
                 console.log(`b`);
                 keyword = req.query.keyword;
             }
         }
         keyword = keyword.toLowerCase();
         let parsedData = await getPokemon(keyword);
-        res.render("newProduct", {"parsedData":parsedData});
-    }else{                                    //if user hasn't authenticated
+        res.render("newProduct", { "parsedData": parsedData });
+    } else {                                    //if user hasn't authenticated
         res.render("adminLogin");                  //send them to the login screen
     }
 });
-app.post("/addProduct", isAdminAuthenticated, async function(req, res){
+app.post("/addProduct", isAdminAuthenticated, async function (req, res) {
     const newPokemon = req.body;
     const result = await insertProduct(newPokemon);
     console.log(`Pokemon added: ${result}`);
-    if(!result){
+    if (!result) {
         console.log("Pokemon's name: " + newPokemon.name);
         return res.redirect("updateProduct?pokemonName=" + newPokemon.name);
-    } 
+    }
 });
-app.get("/updateProduct", isAdminAuthenticated, async function(req, res){
-    if (req.session.adminAuthenticated){ 
+app.get("/updateProduct", isAdminAuthenticated, async function (req, res) {
+    if (req.session.adminAuthenticated) {
         let productInfo = await getProductInfoAdmin(req.query.pokemonName);
         console.log(`pokemon info: ${productInfo}`);
-        res.render("updateProduct", {"productInfo":productInfo});
-    }else{                                    //if user hasn't authenticated
+        res.render("updateProduct", { "productInfo": productInfo });
+    } else {                                    //if user hasn't authenticated
         res.render("adminLogin");                  //send them to the login screen
     }
 });
-app.post("/updateProduct", isAdminAuthenticated, async function(req, res){
+app.post("/updateProduct", isAdminAuthenticated, async function (req, res) {
     console.log(`Post for updateProduct`);
     const updatedPokemon = req.body;
     console.log(updatedPokemon);
     const result = client.db("pokemondb").collection("pokemon").updateOne(
-        {name: updatedPokemon.name},
-        {$set: updatedPokemon}
+        { name: updatedPokemon.name },
+        { $set: updatedPokemon }
     );
     console.log(`result for post: ${result}`);
     res.redirect('/admin');
 });
-app.get("/deleteProduct", isAdminAuthenticated, async function(req, res){
+app.get("/deleteProduct", isAdminAuthenticated, async function (req, res) {
     let result = await deleteProduct(req.query.pokemonName);
     console.log(result);
     let message = "Product WAS NOT deleted!";
     if (result.deletedCount > 0) {
         message = "Product successfully deleted!";
-        }
+    }
     let productList = await getProductList();
-    res.render("admin", {"productList":productList});
+    res.render("admin", { "productList": productList });
 });
 
 
@@ -225,7 +233,7 @@ app.get("/deleteProduct", isAdminAuthenticated, async function(req, res){
 //     res.send(await getStats(req.body.command));
 // });
 
-app.get("/adminStats", isAdminAuthenticated, function(req, res){
+app.get("/adminStats", isAdminAuthenticated, function (req, res) {
 
     res.render("adminStatistics");
 
@@ -233,72 +241,86 @@ app.get("/adminStats", isAdminAuthenticated, function(req, res){
 
 
 // FUNCTIONS
-async function insertProduct(body){
-    if(await client.db("pokemondb").collection("pokemon").findOne({name: { $regex : new RegExp(body.name, "i") }})){
+
+function hash_password(password, salt) {
+    let params = { "N": 16, "r": 1, "p": 1 };
+    let length = 64;
+    return scrypt.hashSync(password, params, length, salt);
+}
+
+
+async function insertProduct(body) {
+    if (await client.db("pokemondb").collection("pokemon").findOne({ name: { $regex: new RegExp(body.name, "i") } })) {
         console.log(`${body.name} already in database`);
         return false;
-    } else{
+    } else {
         const result = await client.db("pokemondb").collection("pokemon").insertOne(body);
         console.log(`${body.name} inserted in database`);
         return true;
     }
 }
 
-async function getProductList(){
-    
+async function getProductList() {
+
     console.log(`getProductList`);
     const result = await client.db("pokemondb").collection("pokemon").find().toArray();
     console.log(`number of pokemon in cluster: ${result.length}`);
     return result;
 }
 
-async function addToCart(username, pokemonName, quantityChosen){
+async function addToCart(username, pokemonName, quantityChosen) {
     quantityChosen = parseInt(quantityChosen);
-    var pokemon = await client.db("pokemondb").collection("pokemon").findOne({"name": pokemonName});
-    
-    var result = await client.db("userdb").collection("users").findOne({"username": username});
+    var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": pokemonName });
+
+    var result = await client.db("userdb").collection("users").findOne({ "username": username });
     console.log(result);
-    if(result.cart == null){
+    if (result.cart == null) {
         console.log("empty array");
         console.log(pokemon);
         result.cart = [[pokemonName, pokemon.price, quantityChosen]];
-    }else{
+    } else {
         var index;
         var found = false;
-        for(index = 0; index < result.cart.length; index++){
-            if(result.cart[index][0] == pokemonName){
+        for (index = 0; index < result.cart.length; index++) {
+            if (result.cart[index][0] == pokemonName) {
                 found = true;
                 break;
             }
         }
-        if(found){
+        if (found) {
             result.cart[index][2] = quantityChosen;
         }
-        else{
+        else {
             result.cart[result.cart.length] = [pokemonName, pokemon.price, quantityChosen];
         }
     }
     console.log(`new cart: `);
     var index;
-    for (index = 0; index < result.cart.length; index++) { 
-        console.log(result.cart[index]); 
-    } 
+    for (index = 0; index < result.cart.length; index++) {
+        console.log(result.cart[index]);
+    }
     result = await client.db("userdb").collection("users").updateOne(
-        {"username": username},
-        {$set: {"cart": result.cart}
+        { "username": username },
+        {
+            $set: { "cart": result.cart }
         });
 }
 
-async function createUser(username, password, email, bio){
+async function createUser(username, password, email, bio) {
     console.log(`createUser called`);
-    const result = await client.db("userdb").collection("users").findOne({"username": username});
-    if(result != null){
+    let result = await client.db("userdb").collection("users").findOne({ "username": username });
+    if (result != null) {
         // do something to signify error creating account
         console.log(`user found with username: ${username}`);
-    } else{
-        const result = await client.db("userdb").collection("users").insertOne({
-            "username": username, 
-            "password": password,
+    } else {
+        let password_salt = crypto.randomBytes(128).toString("base64");
+        console.log(password_salt);
+        let password_hash = hash_password(password, password_salt);
+
+        result = await client.db("userdb").collection("users").insertOne({
+            "username": username,
+            "password_hash": password_hash,
+            "password_salt": password_salt,
             "email": email,
             "bio": bio
         });
@@ -307,108 +329,108 @@ async function createUser(username, password, email, bio){
     return result;
 }
 
-async function getProductInfoAdmin(pokemonName){
+async function getProductInfoAdmin(pokemonName) {
     console.log(`Name: ${pokemonName}`);
-    const result = await client.db("pokemondb").collection("pokemon").findOne({"name" : { $regex : new RegExp(pokemonName, "i") }});
+    const result = await client.db("pokemondb").collection("pokemon").findOne({ "name": { $regex: new RegExp(pokemonName, "i") } });
     console.log(`result: ${result}`);
     return result;
 }
 
-async function updateProduct(updatedPokemon){
+async function updateProduct(updatedPokemon) {
     const result = await client.db("pokemondb").collection("pokemon").updateOne(updatedPokemon);
     console.log(`${result.matchedCount} document(s) matched the query criteria`);
     console.log(`${result.modifiedCount} document(s) was/were updated`);
 }
 
-async function deleteProduct(pokemonName){
-    const result = await client.db("pokemondb").collection("pokemon").deleteOne({name: pokemonName});
+async function deleteProduct(pokemonName) {
+    const result = await client.db("pokemondb").collection("pokemon").deleteOne({ name: pokemonName });
     console.log(`${result.deletedCount} pokemon was/were deleted`);
     return result;
 }
 
-async function clearCart(username){
-    var user = await client.db("userdb").collection("users").findOne({"username": username});
+async function clearCart(username) {
+    var user = await client.db("userdb").collection("users").findOne({ "username": username });
     var index;
     var result;
     var pokemonName;
-    try{
-        for(index = 0; index < user.cart.length; index++){
+    try {
+        for (index = 0; index < user.cart.length; index++) {
             pokemonName = user.cart[index][0];
-            var pokemon = await client.db("pokemondb").collection("pokemon").findOne({"name": user.cart[index][0]});
+            var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": user.cart[index][0] });
             pokemon.quantity -= user.cart[index][2];
-            await client.db("pokemondb").collection("pokemon").updateOne({"name": pokemon.name}, {$set: {"quantity": pokemon.quantity}});
+            await client.db("pokemondb").collection("pokemon").updateOne({ "name": pokemon.name }, { $set: { "quantity": pokemon.quantity } });
         }
-    }catch(e){
+    } catch (e) {
         console.log("cart is empty");
     }
-    result = await client.db("userdb").collection("users").updateOne({"username": username}, {$unset: {cart: null}});
+    result = await client.db("userdb").collection("users").updateOne({ "username": username }, { $unset: { cart: null } });
 }
 
-app.get("/searchProduct", isUserAuthenticated, async function(req, res){
+app.get("/searchProduct", isUserAuthenticated, async function (req, res) {
 
-//   let categories = await getCategories();
-  //console.log(categories);
-//   res.render("searchProduct", {"categories":categories});
+    //   let categories = await getCategories();
+    //console.log(categories);
+    //   res.render("searchProduct", {"categories":categories});
     res.render("searchProduct");
 
 });
 
-app.get("/cart", isUserAuthenticated, async function(req, res){
-//   console.log("happens")
-  let items = await getCart(req.session.name);
-//   console.log(items);
-  let total = 0;
+app.get("/cart", isUserAuthenticated, async function (req, res) {
+    //   console.log("happens")
+    let items = await getCart(req.session.name);
+    //   console.log(items);
+    let total = 0;
 
-  if(items != null){
-      items.forEach(function(item){
-          total += item[1]*item[2]
-      })
-    res.render("cart", {"items":items, "total":total});
-  } else{  
-    res.render("cart", {"items":[,,], "total":total});
-  }
+    if (items != null) {
+        items.forEach(function (item) {
+            total += item[1] * item[2]
+        })
+        res.render("cart", { "items": items, "total": total });
+    } else {
+        res.render("cart", { "items": [, ,], "total": total });
+    }
 
 });
 
-app.get("/checkout", isUserAuthenticated, async function(req, res){
+app.get("/checkout", isUserAuthenticated, async function (req, res) {
 
-  let categories = await clearCart(req.session.name);
-  //console.log(categories);
-  res.render("checkout", {"categories":categories});
+    let categories = await clearCart(req.session.name);
+    //console.log(categories);
+    res.render("checkout", { "categories": categories });
 
 });
 
 // from lab 9 user side of page
-app.get("/products", isUserAuthenticated, async function(req, res){
-  let rows = await getProduct(req.query.keyword);
-  res.render("products", {"records":rows});
+app.get("/products", isUserAuthenticated, async function (req, res) {
+    let rows = await getProduct(req.query.keyword);
+    res.render("products", { "records": rows });
 
 });//product
 
-app.get("/productDetails/:id", async function(req, res){
-    const record = await client.db("pokemondb").collection("pokemon").findOne({name: req.params.id});
+app.get("/productDetails/:id", async function (req, res) {
+    const record = await client.db("pokemondb").collection("pokemon").findOne({ name: req.params.id });
     console.log(record);
-    res.render("productDetails", {"record": record});
+    res.render("productDetails", { "record": record });
 
 });//productDetails
 
 //Route for User Profile Page
-app.get("/profilePage", async function(req, res) {
+app.get("/profilePage", async function (req, res) {
     //var cUser = req.cookie.cookieUser;
     var cUser = req.session.name;
     console.log(cUser);
-    const userProf =  await client.db("userdb").collection("users").findOne({username: cUser});
+    const userProf = await client.db("userdb").collection("users").findOne({ username: cUser });
     console.log(userProf);
-    res.render("profilePage", {"userProf": userProf})
+    res.render("profilePage", { "userProf": userProf })
 })
 
 //Create Account POST
-app.post("/index", function(req, res){
+app.post("/index", function (req, res) {
     //Add data from form into, DB
     var tempName = req.body.username;
     var tempPass = req.body.password;
     var tempEmail = req.body.email;
-    
+
     console.log(tempName)
     console.log(tempPass)
     console.log(tempEmail)
@@ -418,15 +440,15 @@ app.post("/index", function(req, res){
 })
 
 //Micheals Function
-async function createUser(username, password, email, bio){
+async function createUser(username, password, email, bio) {
     console.log(`createUser called`);
-    const result = await client.db("userdb").collection("users").findOne({"username": username});
-    if(result != null){
+    const result = await client.db("userdb").collection("users").findOne({ "username": username });
+    if (result != null) {
         // do something to signify error creating account
         console.log(`user found with username: ${username}`);
-    } else{
+    } else {
         const result = await client.db("userdb").collection("users").insertOne({
-            "username": username, 
+            "username": username,
             "password": password,
             "email": email,
             "bio": bio
@@ -437,60 +459,60 @@ async function createUser(username, password, email, bio){
 }
 
 //Create Account Route
-app.get("/createAccount", function(req, res){
+app.get("/createAccount", function (req, res) {
     res.render("createAccount.ejs")
 })
 
-app.get("/productInfo", isUserAuthenticated, async function(req, res){
-    
-   let rows = await getProduct(req.query.productID);
-  //res.render("products", {"records":rows});
+app.get("/productInfo", isUserAuthenticated, async function (req, res) {
+
+    let rows = await getProduct(req.query.productID);
+    //res.render("products", {"records":rows});
     res.send(rows)
 });//product
 
-async function getProduct(pokemonName){
+async function getProduct(pokemonName) {
     var result;
     console.log(`getProduct run`);
-    if(pokemonName == ''){
+    if (pokemonName == '') {
         result = await client.db("pokemondb").collection("pokemon").find().toArray();
-    }else{
-        result = await client.db("pokemondb").collection("pokemon").find({name: pokemonName}).toArray();
+    } else {
+        result = await client.db("pokemondb").collection("pokemon").find({ name: pokemonName }).toArray();
     }
 
     console.log(result);
     return result;
 }//getproduct
 
-async function getCart(username){
-    const result = await client.db("userdb").collection("users").findOne({"username": username});
+async function getCart(username) {
+    const result = await client.db("userdb").collection("users").findOne({ "username": username });
     console.log(`getCart: ${result}`);
     return result.cart;
 }
 
-function getPokemon(keyword){
+function getPokemon(keyword) {
     console.log("function getPokemon called");
-    return new Promise( function(resolve, reject){
+    return new Promise(function (resolve, reject) {
         //request is run and other code after this block is run while waiting for a response
-        request('https://pokeapi.co/api/v2/pokemon/'+keyword,
+        request('https://pokeapi.co/api/v2/pokemon/' + keyword,
             function (error, response, body) {
-				console.log('error if any:', error); // Print the error if one occurred
-            // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-            // console.log('body:', body); // Print the HTML for the Google homepage.
-            //console.log(response.statusCode); //should be 200
-            if (!error && response.statusCode == 200){ //no errors in the request
-                let parsedData = JSON.parse(body); //converts plain text to json
-                resolve(parsedData);
-            } else {
-                reject(error);
-                console.log(response.statusCode); //should be 200
-                console.log(error); 
-            }
-        });//request
+                console.log('error if any:', error); // Print the error if one occurred
+                // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+                // console.log('body:', body); // Print the HTML for the Google homepage.
+                //console.log(response.statusCode); //should be 200
+                if (!error && response.statusCode == 200) { //no errors in the request
+                    let parsedData = JSON.parse(body); //converts plain text to json
+                    resolve(parsedData);
+                } else {
+                    reject(error);
+                    console.log(response.statusCode); //should be 200
+                    console.log(error);
+                }
+            });//request
     });
 }
 
 
 //starting server
-app.listen(process.env.PORT, process.env.IP, function(){
-console.log("Express server is running...");
+app.listen(process.env.PORT, process.env.IP, function () {
+    console.log("Express server is running...");
 });
