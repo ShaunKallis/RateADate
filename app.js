@@ -17,6 +17,7 @@ client.connect();
 app.use(cookieParser());
 
 app.set("view engine", "ejs");
+app.use(express.json()) // use json middleware
 app.use(express.static("public")); //folder for images, css, js
 app.use(express.urlencoded()); // used to parse data sent using the POST method
 // Recall all middleware for app.use executes every time before routes
@@ -161,12 +162,6 @@ function eraseCookie(name) {
     document.cookie = name + '=; Max-Age=-99999999;';
 }
 
-
-app.post("/addToCart", isUserAuthenticated, async function (req, res) {
-    const result = await addToCart(req.session.name, req.body.pokemonName, req.body.quantityChosen);
-    console.log(`added to cart`);
-})
-
 app.get("/logout", function (req, res) {
     req.session.destroy();
     res.redirect("/");   //taking user back to login screen
@@ -268,44 +263,6 @@ async function getProductList() {
     const result = await client.db("pokemondb").collection("pokemon").find().toArray();
     console.log(`number of pokemon in cluster: ${result.length}`);
     return result;
-}
-
-async function addToCart(username, pokemonName, quantityChosen) {
-    quantityChosen = parseInt(quantityChosen);
-    var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": pokemonName });
-
-    var result = await client.db(database_name).collection("users").findOne({ "username": username });
-    console.log(result);
-    if (result.cart == null) {
-        console.log("empty array");
-        console.log(pokemon);
-        result.cart = [[pokemonName, pokemon.price, quantityChosen]];
-    } else {
-        var index;
-        var found = false;
-        for (index = 0; index < result.cart.length; index++) {
-            if (result.cart[index][0] == pokemonName) {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            result.cart[index][2] = quantityChosen;
-        }
-        else {
-            result.cart[result.cart.length] = [pokemonName, pokemon.price, quantityChosen];
-        }
-    }
-    console.log(`new cart: `);
-    var index;
-    for (index = 0; index < result.cart.length; index++) {
-        console.log(result.cart[index]);
-    }
-    result = await client.db(database_name).collection("users").updateOne(
-        { "username": username },
-        {
-            $set: { "cart": result.cart }
-        });
 }
 
 async function createUser(username, password, email, bio) {
@@ -466,36 +423,52 @@ async function getProduct(pokemonName) {
     return result;
 }//getproduct
 
-async function getCart(username) {
-    const result = await client.db(database_name).collection("users").findOne({ "username": username });
-    console.log(`getCart: ${result}`);
-    return result.cart;
+async function getReviewsFor(username) {
+    let result = await client.db(database_name).collection("reviews").findOne({ "for": username });
+    return result;
 }
 
-function getPokemon(keyword) {
-    console.log("function getPokemon called");
-    return new Promise(function (resolve, reject) {
-        //request is run and other code after this block is run while waiting for a response
-        request('https://pokeapi.co/api/v2/pokemon/' + keyword,
-            function (error, response, body) {
-                console.log('error if any:', error); // Print the error if one occurred
-                // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-                // console.log('body:', body); // Print the HTML for the Google homepage.
-                //console.log(response.statusCode); //should be 200
-                if (!error && response.statusCode == 200) { //no errors in the request
-                    let parsedData = JSON.parse(body); //converts plain text to json
-                    resolve(parsedData);
-                } else {
-                    reject(error);
-                    console.log(response.statusCode); //should be 200
-                    console.log(error);
-                }
-            });//request
-    });
+async function getReviewsBy(username) {
+    let result = await client.db(database_name).collection("reviews").findOne({ "by": username });
+    return result;
 }
+
+async function setReview(user_for, user_by, rating, text) {
+    let review = await client.db(database_name).collection("reviews").findOne({ "for": user_for, "by": user_by });
+    let review_exists = true;
+
+    if (!review) {
+        review_exists = false;
+        review = { "for": user_for, "by": user_by };
+    }
+
+    review.rating = rating;
+    review.text = text;
+
+    if (review_exists) {
+        review = await client.db(database_name).collection("reviews").updateOne(
+            { "for": user_for, "by": user_by },
+            {
+                $set: review
+            });
+    } else {
+        review = await client.db(database_name).collection("reviews").insertOne(review);
+    }
+
+    return review;
+
+
+}
+
+app.post("/setreview_debug", async function (req, res) {
+    let result = await setReview(req.body.for, req.body.by, req.body.rating, req.body.text);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(result));
+})
 
 
 //starting server
 app.listen(process.env.PORT, process.env.IP, function () {
-    console.log("Express server is running...");
-});
+    console.log(`Express server is running on ${process.env.IP}:${process.env.PORT}...`);
+})
