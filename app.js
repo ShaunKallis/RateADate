@@ -433,6 +433,13 @@ async function getReviewsBy(username) {
     return result;
 }
 
+app.get("/api/reviews", async function (req, res) {
+    let result = await getReviewsFor(req.body.username);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(result));
+})
+
 async function setReview(user_for, user_by, rating, text) {
     let review = await client.db(database_name).collection("reviews").findOne({ "for": user_for, "by": user_by });
     let review_exists = true;
