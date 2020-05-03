@@ -367,16 +367,18 @@ async function addReview(username, rating, textReview) {
     console.log(result);
 
 
-        result = await client.db("RateADate").collection("users").updateOne(
-                        {username: username},
-                        { $set:
-                            {
-                            reviews: {
-                                starRating: rating,
-                                textRating: textReview
-                            }}
-                        });
-        
+    result = await client.db("RateADate").collection("users").updateOne(
+        { username: username },
+        {
+            $set:
+            {
+                reviews: {
+                    starRating: rating,
+                    textRating: textReview
+                }
+            }
+        });
+
 
     // else {
     //     var index;
@@ -475,16 +477,21 @@ app.get("/reviews", async function (req, res) {
     var cUser = req.session.name;
     let rows = await getReviews(cUser);
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
-    console.log("userProf: ", userProf);
-    console.log("data from userProf: ", userProf.reviews);
-    res.render("reviews", { "userProf": userProf,
-                            "records": rows})
+    // console.log("userProf: ", userProf);
+    // console.log("data from userProf: ", userProf.reviews);
+    let reviews = await getReviewsFor(cUser);
+
+    res.render("reviews", {
+        "userProf": userProf,
+        "reviews": reviews,
+        "records": rows,
+    })
 })
 
 app.post("/addreview", isUserAuthenticated, async function (req, res) {
     const newReview = req.body;
     console.log("review: ", newReview);
-    let rows = await(addReview(newReview.username, newReview.rating, newReview.textReview));
+    let rows = await (addReview(newReview.username, newReview.rating, newReview.textReview));
     // const result = await insertProduct(newPokemon);
     // console.log(`Pokemon added: ${result}`);
     // if (!result) {
@@ -534,12 +541,12 @@ async function getProduct(name) {
 }//getproduct
 
 async function getReviewsFor(username) {
-    let result = await client.db(database_name).collection("reviews").findOne({ "for": username });
+    let result = await client.db(database_name).collection("reviews").find({ "for": username }).toArray();
     return result;
 }
 
 async function getReviewsBy(username) {
-    let result = await client.db(database_name).collection("reviews").findOne({ "by": username });
+    let result = await client.db(database_name).collection("reviews").find({ "by": username }).toArray();
     return result;
 }
 
