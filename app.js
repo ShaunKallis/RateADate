@@ -87,7 +87,6 @@ async function adminLoginAttempt(username, password) {
 
 //routes
 app.get("/", function (req, res) {
-
     res.render("index");
 
 });
@@ -410,13 +409,13 @@ app.get("/productInfo", isUserAuthenticated, async function (req, res) {
     res.send(rows)
 });//product
 
-async function getProduct(pokemonName) {
+async function getProduct(name) {
     var result;
     console.log(`getProduct run`);
-    if (pokemonName == '') {
-        result = await client.db("pokemondb").collection("pokemon").find().toArray();
+    if (name == '') {
+        result = await client.db("RateADate").collection("users").find().toArray();
     } else {
-        result = await client.db("pokemondb").collection("pokemon").find({ name: pokemonName }).toArray();
+        result = await client.db("RateADate").collection("users").find({ username: name }).toArray();
     }
 
     console.log(result);
