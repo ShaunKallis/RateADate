@@ -97,6 +97,9 @@ app.get("/adminLogin", async function (req, res) {
     res.render("adminLogin");
 });
 
+app.get("/guidelines", async function (req, res) {
+    res.render("guidelines");
+});
 
 
 // from lab 10, admin side of page
