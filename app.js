@@ -453,7 +453,8 @@ app.get("/products", isUserAuthenticated, async function (req, res) {
 });//product
 
 app.get("/productDetails/:id", async function (req, res) {
-    const record = await client.db("pokemondb").collection("pokemon").findOne({ name: req.params.id });
+    console.log(req.params.id);
+    const record = await client.db("RateADate").collection("users").findOne({ username: req.params.id });
     console.log(record);
     res.render("productDetails", { "record": record });
 
