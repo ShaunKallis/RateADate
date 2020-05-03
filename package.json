@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Voluntary Service to allow dates to rate your dating skills",
   "main": "app.js",
+  "engines": {
+    "node": "10.16.3"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
