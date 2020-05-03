@@ -161,7 +161,9 @@
       <div class="col-sm-3">
         <div class="rating-block">
           <h4>Average user rating</h4>
-          <h2 class="bold padding-bottom-7">4.3 <small>/ 5</small></h2>
+          <h2 class="bold padding-bottom-7"><%= reviews.reduce((a,b) => a + b.rating, 0)/reviews.length %>
+            <small>/ 5</small>
+          </h2>
           <button type="button" data-value="1" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
