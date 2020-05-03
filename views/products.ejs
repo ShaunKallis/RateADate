@@ -28,29 +28,26 @@
     
     
             <div class="container">
-                <h1>Searched Pokemon</h1>
+                <h1>Searched Profiles</h1>
                 <p>Current Listings</p>
             </div>
     
     
     
     
-    <div class="row" style="display:flex; flex-wrap: wrap;">
+    <div class="row" style="display:flex; flex-wrap: wrap; background: rgba(20, 20, 20, 0.6) ; padding: 15px; border-radius: 5px;">
         <% records.forEach( function(record){ %>
             <div class="col-md-3 col-sm-6">
                 <div class="thumbnail">
-                    <img src = <%= record.imageURL %> >
+                    <img src = <%= record.profilePic %> >
                     <div class="caption">
-                        <h4><%= record.name %></h4>
+                        <h4><%= record.username %></h4>
                     </div>
                     <div>
-                        Quantity Available: <%=record.quantity%><br>
-                        Price: $<%=record.price%><br>
+                        Rating: <%=record.avgRating%><br>
                         <div class="w3-show-inline-block">
                         <div class="w3-bar">
-                            <a href="/productDetails/<%= record.name %>" class="btn btn-primary">Info</a>
-                            <button id="<%= record.name %>" class="add">Set Quantity</button>
-                            <input type="number" id="quantityChosen<%=record.name%>" min="0" max="<%= record.quantity %>" value="0" onkeydown="return false"/>
+                            <a href="/productDetails/<%= record.username %>" class="btn btn-primary">View Profile</a>
                         </div>
                         </div>
                     </div>
