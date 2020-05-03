@@ -87,7 +87,6 @@ async function adminLoginAttempt(username, password) {
 
 //routes
 app.get("/", function (req, res) {
-
     res.render("index");
 
 });
@@ -265,7 +264,45 @@ async function getProductList() {
     return result;
 }
 
-async function createUser(username, password, email, bio) {
+async function addToCart(username, pokemonName, quantityChosen) {
+    quantityChosen = parseInt(quantityChosen);
+    var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": pokemonName });
+
+    var result = await client.db(database_name).collection("users").findOne({ "username": username });
+    console.log(result);
+    if (result.cart == null) {
+        console.log("empty array");
+        console.log(pokemon);
+        result.cart = [[pokemonName, pokemon.price, quantityChosen]];
+    } else {
+        var index;
+        var found = false;
+        for (index = 0; index < result.cart.length; index++) {
+            if (result.cart[index][0] == pokemonName) {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            result.cart[index][2] = quantityChosen;
+        }
+        else {
+            result.cart[result.cart.length] = [pokemonName, pokemon.price, quantityChosen];
+        }
+    }
+    console.log(`new cart: `);
+    var index;
+    for (index = 0; index < result.cart.length; index++) {
+        console.log(result.cart[index]);
+    }
+    result = await client.db(database_name).collection("users").updateOne(
+        { "username": username },
+        {
+            $set: { "cart": result.cart }
+        });
+}
+
+async function createUser(username, password, email, bio, reviews) {
     console.log(`createUser called`);
     let result = await client.db("RateADate").collection("users").findOne({ "username": username });
     if (result != null) {
@@ -323,6 +360,55 @@ async function clearCart(username) {
         console.log("cart is empty");
     }
     result = await client.db(database_name).collection("users").updateOne({ "username": username }, { $unset: { cart: null } });
+}
+
+async function addReview(username, rating, textReview) {
+    var result = await client.db("RateADate").collection("users").findOne({ "username": username });
+    console.log(result);
+
+
+        result = await client.db("RateADate").collection("users").updateOne(
+                        {username: username},
+                        { $set:
+                            {
+                            reviews: {
+                                starRating: rating,
+                                textRating: textReview
+                            }}
+                        });
+        
+
+    // else {
+    //     var index;
+    //     var found = false;
+    //     for (index = 0; index < result.cart.length; index++) {
+    //         if (result.cart[index][0] == pokemonName) {
+    //             found = true;
+    //             break;
+    //         }
+    //     }
+    //     if (found) {
+    //         result.cart[index][2] = quantityChosen;
+    //     }
+    //     else {
+    //         result.cart[result.cart.length] = [pokemonName, pokemon.price, quantityChosen];
+    //     }
+    // }
+    // console.log(`new cart: `);
+    // var index;
+    // for (index = 0; index < result.cart.length; index++) {
+    //     console.log(result.cart[index]);
+    // }
+    // result = await client.db(database_name).collection("users").updateOne(
+    //     { "username": username },
+    //     {
+    //         $set: { "cart": result.cart }
+    //     });
+}
+
+async function getReviews(username) {
+    const result = await client.db("RateADate").collection("users").find({ "name": username }).toArray();
+    return result;
 }
 
 app.get("/searchProduct", isUserAuthenticated, async function (req, res) {
@@ -383,6 +469,30 @@ app.get("/profilePage", async function (req, res) {
     res.render("profilePage", { "userProf": userProf })
 })
 
+//Route for User Profile Page
+app.get("/reviews", async function (req, res) {
+    //var cUser = req.cookie.cookieUser;
+    var cUser = req.session.name;
+    let rows = await getReviews(cUser);
+    const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
+    console.log("userProf: ", userProf);
+    console.log("data from userProf: ", userProf.reviews);
+    res.render("reviews", { "userProf": userProf,
+                            "records": rows})
+})
+
+app.post("/addreview", isUserAuthenticated, async function (req, res) {
+    const newReview = req.body;
+    console.log("review: ", newReview);
+    let rows = await(addReview(newReview.username, newReview.rating, newReview.textReview));
+    // const result = await insertProduct(newPokemon);
+    // console.log(`Pokemon added: ${result}`);
+    // if (!result) {
+    //     console.log("Pokemon's name: " + newPokemon.name);
+    //     return res.redirect("updateProduct?pokemonName=" + newPokemon.name);
+    // }
+});
+
 //Create Account POST
 app.post("/index", function (req, res) {
     //Add data from form into, DB
@@ -410,13 +520,13 @@ app.get("/productInfo", isUserAuthenticated, async function (req, res) {
     res.send(rows)
 });//product
 
-async function getProduct(pokemonName) {
+async function getProduct(name) {
     var result;
     console.log(`getProduct run`);
-    if (pokemonName == '') {
-        result = await client.db("pokemondb").collection("pokemon").find().toArray();
+    if (name == '') {
+        result = await client.db("RateADate").collection("users").find().toArray();
     } else {
-        result = await client.db("pokemondb").collection("pokemon").find({ name: pokemonName }).toArray();
+        result = await client.db("RateADate").collection("users").find({ username: name }).toArray();
     }
 
     console.log(result);
