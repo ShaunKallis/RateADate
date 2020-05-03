@@ -265,7 +265,6 @@ async function getProductList() {
     return result;
 }
 
-<<<<<<< HEAD
 async function addToCart(username, pokemonName, quantityChosen) {
     quantityChosen = parseInt(quantityChosen);
     var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": pokemonName });
@@ -305,9 +304,6 @@ async function addToCart(username, pokemonName, quantityChosen) {
 }
 
 async function createUser(username, password, email, bio, reviews) {
-=======
-async function createUser(username, password, email, bio) {
->>>>>>> 8a8b496355b189c7f4c2d4599a3842a553522819
     console.log(`createUser called`);
     let result = await client.db("RateADate").collection("users").findOne({ "username": username });
     if (result != null) {
@@ -478,11 +474,10 @@ app.get("/profilePage", async function (req, res) {
 app.get("/reviews", async function (req, res) {
     //var cUser = req.cookie.cookieUser;
     var cUser = req.session.name;
-    console.log("cUser: ", cUser);
     let rows = await getReviews(cUser);
-    console.log("rows: ", rows);
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
     console.log("userProf: ", userProf);
+    console.log("data from userProf: ", userProf.reviews);
     res.render("reviews", { "userProf": userProf,
                             "records": rows})
 })
