@@ -2,8 +2,8 @@ body{
     min-height: 100%;
     color:white;
     margin:50px;
-    background-image: url("../img/theRealSanders.jpg");
-    /*background-color: black;*/
+    /*background-image: url("../img/theRealSanders.jpg");*/
+    background-color: lightblue;
     background-size: cover;
     background-repeat: no-repeat;
     background-position: left bottom;
@@ -64,7 +64,9 @@ footer {
     text-align: center;
     display:flex;
     right:0px;
-    background-image: url("../img/bottom.jpg");
+    color:royalblue;
+    /*background-image: url("../img/bottom.jpg");*/
+    background-color: lightpink;
     padding: 20px;
     width: 430px;
     height: 230px;
