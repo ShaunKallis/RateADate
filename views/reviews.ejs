@@ -129,7 +129,6 @@
 </nav>
 
 <h1>User Profile</h1>
-<p>This is your current information!</p>
 
 <body>
   Username: <%= userProf.username %><br>
@@ -159,10 +158,12 @@
   <div class="container">
 
     <div class="row">
-      <div class="col-sm-3">
+      <!--<div class="col-sm-3" style="width: 100%">-->
+      <div style="width: 100%">
         <div class="rating-block">
           <h4>Average user rating</h4>
-          <h2 class="bold padding-bottom-7"><%= reviews.reduce((a,b) => a + b.rating, 0)/reviews.length %>
+          <h2 class="bold padding-bottom-7"><%= (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1); %>
+          
             <small>/ 5</small>
           </h2>
           <button type="button" data-value="1" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
@@ -174,12 +175,10 @@
           <button type="button" data-value="3" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
-          <button type="button" data-value="4" class="btn btn-default btn-grey btn-sm star-rating"
-            aria-label="Left Align">
+          <button type="button" data-value="4" class="btn btn-default btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
-          <button type="button" data-value="5" class="btn btn-default btn-grey btn-sm star-rating"
-            aria-label="Left Align">
+          <button type="button" data-value="5" class="btn btn-default btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
 
@@ -206,6 +205,7 @@
             <div class="col-sm-3">
               <div class="review-block-name"><a href="#"><%= userProf.by %></a></div>
             </div>
+            
             <div class="col-sm-9">
               <div class="review-block-rate">
                 <!--<button type="button" class="btn btn-warning btn-xs" aria-label="Left Align">-->
@@ -228,7 +228,6 @@
               <div class="review-block-description"><%= userProf.text %></div>
             </div>
           </div>
-          <hr />
 
           <hr />
 

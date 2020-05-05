@@ -1,19 +1,19 @@
 <%- include('partials/header'); -%>
 <script>
     
-    $(document).ready(function() {
-        $(".add").on("click", function(){
-            $.ajax({
-                method: "POST",
-                url: "/addToCart",
-                dataType: "json",
-                data: { "pokemonName":this.id, "quantityChosen":document.getElementById("quantityChosen" + this.id).value},
-                success: function(result,status) {
-                    alert(result["message"]);
-                }
-            });//ajax
-        }); //click
-    }); //document.ready
+    // $(document).ready(function() {
+    //     $(".add").on("click", function(){
+    //         $.ajax({
+    //             method: "POST",
+    //             url: "/addToCart",
+    //             dataType: "json",
+    //             data: { "pokemonName":this.id, "quantityChosen":document.getElementById("quantityChosen" + this.id).value},
+    //             success: function(result,status) {
+    //                 alert(result["message"]);
+    //             }
+    //         });//ajax
+    //     }); //click
+    // }); //document.ready
 </script>
 </head>
     <nav class="navbar navbar-default">
@@ -56,9 +56,9 @@
         <% }) %>
     </div>
         
-        <form action="/cart">
-        <button> Go to cart </button>
-        </form>
+        <!--<form action="/cart">-->
+        <!--<button> Go to cart </button>-->
+        <!--</form>-->
         <br>
         <form action="/searchProduct">
         <button> Back to search </button>
