@@ -16,6 +16,8 @@ client.connect();
 
 app.use(cookieParser());
 
+app.use(express.static(__dirname + '/public/'));
+
 app.set("view engine", "ejs");
 app.use(express.json()) // use json middleware
 app.use(express.static("public")); //folder for images, css, js
@@ -262,7 +264,7 @@ async function insertProduct(body) {
 async function getProductList() {
 
     console.log(`getProductList`);
-    const result = await client.db("pokemondb").collection("pokemon").find().toArray();
+    const result = await client.db("RateADate").collection("users").find().toArray();
     console.log(`number of pokemon in cluster: ${result.length}`);
     return result;
 }
@@ -365,50 +367,41 @@ async function clearCart(username) {
     result = await client.db(database_name).collection("users").updateOne({ "username": username }, { $unset: { cart: null } });
 }
 
-async function addReview(username, rating, textReview) {
-    var result = await client.db("RateADate").collection("users").findOne({ "username": username });
-    console.log(result);
+
+// ADDS REVIEWS TO USER AND NOT REVIEWS DATABASE
+// async function addReview(username, rating, textReview) {
+//     var result = await client.db("RateADate").collection("users").findOne({ "username": username });
+//     console.log(result);
 
 
-    result = await client.db("RateADate").collection("users").updateOne(
-        { username: username },
-        {
-            $set:
-            {
-                reviews: {
-                    starRating: rating,
-                    textRating: textReview
-                }
-            }
-        });
+//     result = await client.db("RateADate").collection("users").updateOne(
+//         { username: username },
+//         {
+//             $set:
+//             {
+//                 reviews: {
+//                     starRating: rating,
+//                     textRating: textReview
+//                 }
+//             }
+//         });
+// }
 
-
-    // else {
-    //     var index;
-    //     var found = false;
-    //     for (index = 0; index < result.cart.length; index++) {
-    //         if (result.cart[index][0] == pokemonName) {
-    //             found = true;
-    //             break;
-    //         }
-    //     }
-    //     if (found) {
-    //         result.cart[index][2] = quantityChosen;
-    //     }
-    //     else {
-    //         result.cart[result.cart.length] = [pokemonName, pokemon.price, quantityChosen];
-    //     }
-    // }
-    // console.log(`new cart: `);
-    // var index;
-    // for (index = 0; index < result.cart.length; index++) {
-    //     console.log(result.cart[index]);
-    // }
-    // result = await client.db(database_name).collection("users").updateOne(
-    //     { "username": username },
-    //     {
-    //         $set: { "cart": result.cart }
-    //     });
+async function addReview(byUsername, username, rating, textReview) {
+    console.log(byUsername + " " + username + " " + rating + " " + textReview);
+    var result = await client.db("RateADate").collection("reviews").updateOne(
+    {  
+        "by": byUsername, 
+        "for": username 
+        
+    }, 
+    {$set: {
+        "by": byUsername, 
+        "for": username, 
+        "rating": rating, 
+        "text": textReview 
+        
+    }}, {upsert: true});
 }
 
 async function getReviews(username) {
@@ -457,10 +450,19 @@ app.get("/products", isUserAuthenticated, async function (req, res) {
 
 });//product
 
-app.get("/productDetails/:id", async function (req, res) {
-    const record = await client.db("pokemondb").collection("pokemon").findOne({ name: req.params.id });
-    console.log(record);
-    res.render("productDetails", { "record": record });
+app.get("/reviews/:id", async function (req, res) {
+    var cUser = req.params.id;
+    let rows = await getReviews(cUser);
+    const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
+    // console.log("userProf: ", userProf);
+    // console.log("data from userProf: ", userProf.reviews);
+    let reviews = await getReviewsFor(cUser);
+
+    res.render("reviews", {
+        "userProf": userProf,
+        "reviews": reviews,
+        "records": rows,
+    });
 
 });//productDetails
 
@@ -494,7 +496,7 @@ app.get("/reviews", async function (req, res) {
 app.post("/addreview", isUserAuthenticated, async function (req, res) {
     const newReview = req.body;
     console.log("review: ", newReview);
-    let rows = await (addReview(newReview.username, newReview.rating, newReview.textReview));
+    let rows = await (addReview(req.session.name, newReview.username, newReview.rating, newReview.textReview));
 });
 
 //Create Account POST

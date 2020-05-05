@@ -1,26 +1,25 @@
 <%- include('partials/header'); -%>
 <script>
     
-    $(document).ready(function() {
-        $(".add").on("click", function(){
-            $.ajax({
-                method: "POST",
-                url: "/addToCart",
-                dataType: "json",
-                data: { "pokemonName":this.id, "quantityChosen":document.getElementById("quantityChosen" + this.id).value},
-                success: function(result,status) {
-                    alert(result["message"]);
-                }
-            });//ajax
-        }); //click
-    }); //document.ready
+    // $(document).ready(function() {
+    //     $(".add").on("click", function(){
+    //         $.ajax({
+    //             method: "POST",
+    //             url: "/addToCart",
+    //             dataType: "json",
+    //             data: { "pokemonName":this.id, "quantityChosen":document.getElementById("quantityChosen" + this.id).value},
+    //             success: function(result,status) {
+    //                 alert(result["message"]);
+    //             }
+    //         });//ajax
+    //     }); //click
+    // }); //document.ready
 </script>
 </head>
     <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a class="navbar-brand" href="/searchProduct">Back</a>
-                    <a class="navbar-brand" href="/cart">Cart</a>
                     <a class="navbar-brand" href="/logout">Logout</a>
                 </div>
             </div>
@@ -48,7 +47,7 @@
                         Rating: <%=record.avgRating%><br>
                         <div class="w3-show-inline-block">
                         <div class="w3-bar">
-                            <a href="/productDetails/<%= record.username %>" class="btn btn-primary">View Profile</a>
+                            <a href="/reviews/<%= record.username %>" class="btn btn-primary">View Profile</a>
                         </div>
                         </div>
                     </div>
@@ -57,9 +56,9 @@
         <% }) %>
     </div>
         
-        <form action="/cart">
-        <button> Go to cart </button>
-        </form>
+        <!--<form action="/cart">-->
+        <!--<button> Go to cart </button>-->
+        <!--</form>-->
         <br>
         <form action="/searchProduct">
         <button> Back to search </button>

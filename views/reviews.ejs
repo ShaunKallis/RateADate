@@ -1,4 +1,5 @@
 <%- include('partials/header') -%>
+<link rel="stylesheet" href="~/public/css/styles.css">
 
 <script>
 
@@ -23,6 +24,8 @@
       });//ajax
     }); //click
   }); //document.ready
+  
+  var avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1); 
 </script>
 
 <head>
@@ -35,6 +38,8 @@
   <link rel="icon" href="favicon.ico">
 
   <title>Fixed Top Navbar Example for Bootstrap</title>
+
+    <link rel="stylesheet" type="text/css"   href="/css/styles.css">
 
   <!-- Bootstrap core CSS -->
   <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -120,68 +125,66 @@
   <div class="container-fluid">
     <div class="navbar-header">
       <a class="navbar-brand" href="/searchProduct">Back</a>
-      <a class="navbar-brand" href="/cart">Cart</a>
       <a class="navbar-brand" href="/logout">Logout</a>
     </div>
   </div>
 </nav>
 
 <h1>User Profile</h1>
-<p>This is your current information!</p>
 
 <body>
   Username: <%= userProf.username %><br>
-  Password: <%= userProf.password %><br>
   Email: <%= userProf.email %><br>
+  <br>
 
-  <nav class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
-          aria-expanded="false" aria-controls="navbar">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#">Demo</a>
-      </div>
-      <div id="navbar" class="navbar-collapse collapse">
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="../navbar/">Default</a></li>
-        </ul>
-      </div>
+  <!--<nav class="navbar navbar-default navbar-fixed-top">-->
+  <!--  <div class="container">-->
+  <!--    <div class="navbar-header">-->
+  <!--      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"-->
+  <!--        aria-expanded="false" aria-controls="navbar">-->
+  <!--        <span class="sr-only">Toggle navigation</span>-->
+  <!--        <span class="icon-bar"></span>-->
+  <!--        <span class="icon-bar"></span>-->
+  <!--        <span class="icon-bar"></span>-->
+  <!--      </button>-->
+  <!--      <a class="navbar-brand" href="#">Demo</a>-->
+  <!--    </div>-->
+  <!--    <div id="navbar" class="navbar-collapse collapse">-->
+  <!--      <ul class="nav navbar-nav navbar-right">-->
+  <!--        <li><a href="../navbar/">Default</a></li>-->
+  <!--      </ul>-->
+  <!--    </div>-->
       <!--/.nav-collapse -->
-    </div>
-  </nav>
+  <!--  </div>-->
+  <!--</nav>-->
 
   <div class="container">
 
     <div class="row">
-      <div class="col-sm-3">
+      <!--<div class="col-sm-3" style="width: 100%">-->
+      <div style="width: 100%">
         <div class="rating-block">
           <h4>Average user rating</h4>
-          <h2 class="bold padding-bottom-7"><%= reviews.reduce((a,b) => a + b.rating, 0)/reviews.length %>
+          <h2 class="bold padding-bottom-7"><%= avgRating%>
+          
             <small>/ 5</small>
           </h2>
-          <button type="button" data-value="1" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
+          <button id="s1" type="button" data-value="1" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
-          <button type="button" data-value="2" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
+          <button id="s2" type="button" data-value="2" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
-          <button type="button" data-value="3" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
+          <button id="s3" type="button" data-value="3" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
-          <button type="button" data-value="4" class="btn btn-default btn-grey btn-sm star-rating"
-            aria-label="Left Align">
+          <button id="s4" type="button" data-value="4" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
-          <button type="button" data-value="5" class="btn btn-default btn-grey btn-sm star-rating"
-            aria-label="Left Align">
+          <button id="s5" type="button" data-value="5" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
           </button>
-
+          
           <input type="hidden" id="star" />
 
           <input type="hidden" id="username" value=<%= userProf.username %> />
@@ -205,6 +208,7 @@
             <div class="col-sm-3">
               <div class="review-block-name"><a href="#"><%= userProf.by %></a></div>
             </div>
+            
             <div class="col-sm-9">
               <div class="review-block-rate">
                 <!--<button type="button" class="btn btn-warning btn-xs" aria-label="Left Align">-->
@@ -227,7 +231,6 @@
               <div class="review-block-description"><%= userProf.text %></div>
             </div>
           </div>
-          <hr />
 
           <hr />
 
