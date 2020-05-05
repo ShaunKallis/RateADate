@@ -20,7 +20,6 @@
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a class="navbar-brand" href="/searchProduct">Back</a>
-                    <a class="navbar-brand" href="/cart">Cart</a>
                     <a class="navbar-brand" href="/logout">Logout</a>
                 </div>
             </div>
@@ -48,7 +47,7 @@
                         Rating: <%=record.avgRating%><br>
                         <div class="w3-show-inline-block">
                         <div class="w3-bar">
-                            <a href="/productDetails/<%= record.username %>" class="btn btn-primary">View Profile</a>
+                            <a href="/reviews/<%= record.username %>" class="btn btn-primary">View Profile</a>
                         </div>
                         </div>
                     </div>

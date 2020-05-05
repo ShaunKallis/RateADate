@@ -16,6 +16,8 @@ client.connect();
 
 app.use(cookieParser());
 
+app.use(express.static(__dirname + '/public/'));
+
 app.set("view engine", "ejs");
 app.use(express.json()) // use json middleware
 app.use(express.static("public")); //folder for images, css, js
@@ -457,10 +459,19 @@ app.get("/products", isUserAuthenticated, async function (req, res) {
 
 });//product
 
-app.get("/productDetails/:id", async function (req, res) {
-    const record = await client.db("pokemondb").collection("pokemon").findOne({ name: req.params.id });
-    console.log(record);
-    res.render("productDetails", { "record": record });
+app.get("/reviews/:id", async function (req, res) {
+    var cUser = req.params.id;
+    let rows = await getReviews(cUser);
+    const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
+    // console.log("userProf: ", userProf);
+    // console.log("data from userProf: ", userProf.reviews);
+    let reviews = await getReviewsFor(cUser);
+
+    res.render("reviews", {
+        "userProf": userProf,
+        "reviews": reviews,
+        "records": rows,
+    });
 
 });//productDetails
 
