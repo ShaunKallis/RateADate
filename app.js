@@ -97,6 +97,9 @@ app.get("/adminLogin", async function (req, res) {
     res.render("adminLogin");
 });
 
+app.get("/guidelines", async function (req, res) {
+    res.render("guidelines");
+});
 
 
 // from lab 10, admin side of page
@@ -492,12 +495,6 @@ app.post("/addreview", isUserAuthenticated, async function (req, res) {
     const newReview = req.body;
     console.log("review: ", newReview);
     let rows = await (addReview(newReview.username, newReview.rating, newReview.textReview));
-    // const result = await insertProduct(newPokemon);
-    // console.log(`Pokemon added: ${result}`);
-    // if (!result) {
-    //     console.log("Pokemon's name: " + newPokemon.name);
-    //     return res.redirect("updateProduct?pokemonName=" + newPokemon.name);
-    // }
 });
 
 //Create Account POST
