@@ -1,34 +1,34 @@
 <%- include('partials/header'); -%>
-        
-    </head>
-    
-    <body>
-            <h1 class="jumbotron">Rate-A-Date<br>
-            <p style="font-size:18px;">See what people really think</p></h1>
-            <br>
-            
-            <button id="submitBtn1" class="btn btn-outline-danger"> User Sign In </button><br>
-            
-            <button id="submitBtn2" class="btn btn-outline-danger"> Admin Sign In </button><br><br>
-            
-            <button id="submitBtn3" class="btn btn-outline-danger"> Create Account </button><br>
-    
+
+</head>
+
+<body>
+    <h1 class="jumbotron font-weight-bold">Rate-A-Date<br>
+        <p class="font-weight-bold" style="font-size:0.5em;">See what people really think</p>
+    </h1>
+    <br>
+
+    <div class="d-flex flex-column align-items-center w-100">
+        <button id="submitBtn1" class="btn btn-outline-danger w-25"> User Sign In </button><br>
+
+        <button id="submitBtn2" class="btn btn-outline-danger w-25"> Admin Sign In </button><br><br>
+
+        <button id="submitBtn3" class="btn btn-outline-danger w-25"> Create Account </button><br>
+    </div>
+
     <script>
-            $("#submitBtn1").on("click", function()
-            {
-                location.href = "/userLogin";
-            });
-            $("#submitBtn2").on("click", function()
-            {
-                location.href = "/adminLogin";
-            });
-            $("#submitBtn3").on("click", function()
-            {
-                location.href = "/createAccount";
-            });
-        </script>
-        
-    </body>
-    
+        $("#submitBtn1").on("click", function () {
+            location.href = "/userLogin";
+        });
+        $("#submitBtn2").on("click", function () {
+            location.href = "/adminLogin";
+        });
+        $("#submitBtn3").on("click", function () {
+            location.href = "/createAccount";
+        });
+    </script>
+
+</body>
+
 
 <%- include('partials/footer'); -%>

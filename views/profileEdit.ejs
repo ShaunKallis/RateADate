@@ -1,0 +1,202 @@
+<%- include('partials/header') -%>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.js"
+    integrity="sha256-OG/103wXh6XINV06JTPspzNgKNa/jnP1LjPP5Y3XQDY=" crossorigin="anonymous"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#saveprofile").click(function () {
+
+            if (curr_file_url != null) {
+
+                fetch(curr_file_url)
+                    .then(res => res.blob()).then(
+                        blob => {
+                            let form_data = new FormData();
+                            form_data.append("avatar", blob);
+                            $.ajax({
+                                method: "POST",
+                                url: "/cdn/avatars",
+                                enctype: 'multipart/form-data',
+                                data: form_data,
+                                processData: false,
+                                contentType: false,
+                                cache: false,
+                                success: function (data) {
+                                    let avatar_id = JSON.parse(data).avatar_id;
+                                    update_profile(avatar_id);
+                                },
+                            });
+
+                        }
+                    )
+            } else {
+                update_profile(curr_avatar_id);
+            }
+
+
+        });
+
+        function update_profile(avatar_id) {
+            console.log(avatar_id);
+            $.ajax({
+                method: "POST",
+                url: "/setprofile",
+                dataType: "json",
+                data: {
+                    "firstname": $("#fname").val(),
+                    "lastname": $("#lname").val(),
+                    "bio": $("#bio").val(),
+                    "avatar_id": avatar_id
+                },
+                success: function (result, status) {
+                    location.href = "/profile";
+                }
+            });
+        }
+
+        let username = "<%= userProf.username %>"
+
+        let fallback_img = `/cdn/avatars/${username}/default.png`;
+
+        let curr_avatar_id = "<%= userProf.profile.avatar_id %>";
+
+        let curr_file = null;
+        let curr_file_url = curr_avatar_id == null ? null : `/cdn/avatars/${username}.png`;
+
+        Dropzone.options.avatarArea = {
+            paramName: "file", // The name that will be used to transfer the file
+            maxFiles: 1,
+            autoProcessQueue: false,
+            thumbnailHeight: 480,
+            thumbnailWidth: 480,
+            previewTemplate: $("#dz-layout").html(),
+            acceptedFiles: "image/*",
+            init: function () {
+                let dz = this;
+
+                $(".dz-message").text("");
+                $(".dz-message").append($("#curr_thumbnail"));
+                $("#curr_thumbnail").css("display", "block");
+
+                this.on("thumbnail", function (file, dataURL) {
+                    if (file.accepted) {
+                        curr_avatar_id = null;
+                        push_file_to_display(file, dataURL);
+                        $("a.remove-button").removeClass("disabled");
+                    }
+                    this.removeFile(file);
+                });
+
+                $("a.remove-button").click(
+                    function () {
+                        if (curr_file != null || curr_avatar_id != null) {
+                            if (curr_file != null) {
+                                dz.removeFile(curr_file);
+                            }
+                            curr_file = null;
+                            curr_file_url = null;
+                            curr_avatar_id = null;
+                            set_thumbnail(fallback_img);
+                            $("a.remove-button").addClass("disabled");
+                        }
+
+                        return false;
+
+                    }
+                );
+
+            }
+
+        };
+
+        let initial_url = curr_file_url;
+        if (curr_file_url == null) {
+            $("a.remove-button").addClass("disabled");
+            initial_url = fallback_img;
+        }
+        set_thumbnail(initial_url);
+
+        function set_thumbnail(url) {
+            $("#curr_thumbnail").attr("src", url);
+        }
+
+        function push_file_to_display(file, dataURL) {
+            curr_file = file;
+            curr_file_url = dataURL;
+            set_thumbnail(curr_file_url);
+        }
+
+    });
+</script>
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/profile">Back</a>
+            <a class="navbar-brand" href="/cart">Cart</a>
+            <a class="navbar-brand" href="/logout">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<body>
+    <h1>User Profile</h1>
+    <p>Edit your profile here!</p>
+
+    <div class="d-flex w-10 flex-column align-items-center">
+        <div class="d-flex flex-column align-items-center w-100">
+            <form action="/file-upload" class="dropzone rounded m-3" id="avatar-area"=2>
+            </form>
+            <p>
+                <a class="remove-button" href="#">Remove</a>
+            </p>
+
+
+            <div id="dz-layout" class="dz-preview dz-file-preview">
+                <div id="dz-message">
+                    <img id="curr_thumbnail" class="rounded" />
+
+                </div>
+            </div>
+
+            <table class="m-3">
+                <tr>
+                    <td class="pr-2">
+                        <label for="fname">First name</label>
+                    </td>
+                    <td>
+                        <input class="form-control" type="text" id="fname" name="fname" placeholder="First Name"
+                            value="<%= userProf.profile.firstname %>">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="pr-2">
+                        <label for="lname">Last name</label>
+                    </td>
+                    <td>
+                        <input class="form-control" type="text" id="lname" name="lname" placeholder="Last Name"
+                            value="<%= userProf.profile.lastname %>">
+                    </td>
+                </tr>
+            </table>
+            <p>
+                <label for="bio">Tell us more about yourself</label><br>
+                <textarea class="form-control" type="text" id="bio" name="bio"
+                    placeholder="Bio"><%= userProf.profile.bio %></textarea>
+            </p>
+        </div>
+        <div class="d-flex w-25 m-3 justify-content-between">
+            <a class="btn btn-secondary" href="/profile">Cancel</a>
+            <button id="saveprofile" class="btn btn-primary">
+                <span class="material-icons">
+                    save
+                </span>
+            </button>
+        </div>
+
+    </div>
+</body>
+
+
+<%- include('partials/footer') -%>
