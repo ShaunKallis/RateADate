@@ -16,7 +16,7 @@
 
     <div class="d-flex w-10 justify-content-center">
         <div class="d-flex flex-column align-items-center w-25">
-            <img class="profilepic rounded m-3" src="data:image/png;base64,<%= userProf.profile.image %>" />
+            <img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.username %>.png" />
             <p class="font-weight-bold">
                 <%= userProf.profile.firstname %> <%= userProf.profile.lastname %>
             </p>

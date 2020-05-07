@@ -6,11 +6,14 @@ const express = require("express");
 const app = express();
 const session = require('express-session');
 const crypto = require('crypto');
+const multer = require('multer');
 const scrypt = require('scrypt');
 
 const Identicon = require('identicon.js');
 
 const MongoClient = require('mongodb').MongoClient;
+const ObjectId = require('mongodb').ObjectId;
+
 const uri = "mongodb+srv://mRidge:duzSEpQQh4fTIqSm@cluster0-2dcbj.mongodb.net/test?retryWrites=true&w=majority";
 const database_name = "RateADate";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -37,6 +40,78 @@ function myMiddleware(req, res, next) {
     next(); // passes control to back to server to do the next thing.
 }
 
+// multer storage
+let storage = multer.memoryStorage();
+let upload = multer({ storage: storage });
+
+app.post('/cdn/avatars', isUserAuthenticated, upload.single('avatar'), async function (req, res, next) {
+    const file = req.file
+    if (!file) {
+        const error = new Error('Please upload a file');
+        error.httpStatusCode = 400;
+        return next(error);
+    }
+
+    let avatar_id = await store_avatar(req.session.name, file.buffer);
+    res.send(JSON.stringify({ "avatar_id": avatar_id }));
+
+})
+
+app.get('/cdn/avatars/:username.png', async function (req, res, next) {
+    let username = req.params.username;
+    let user_obj = await getUser(username);
+
+    if (!user_obj) {
+        const error = new Error('Not Found');
+        error.httpStatusCode = 404;
+        return next(error);
+    }
+
+    let avatar_id = user_obj.profile.avatar_id;
+
+    let avatar = await get_avatar(username, avatar_id, user_obj._id.toString());
+
+    res.setHeader('Content-Type', 'image/png');
+    res.end(avatar);
+})
+
+app.get('/cdn/avatars/:username/default.png', async function (req, res, next) {
+    let username = req.params.username;
+    let user_obj = await getUser(username);
+
+    if (!user_obj) {
+        const error = new Error('Not Found');
+        error.httpStatusCode = 404;
+        return next(error);
+    }
+
+    res.setHeader('Content-Type', 'image/png');
+    res.end(get_user_identicon(user_obj._id.toString()));
+})
+
+async function store_avatar(username, buffer) {
+    let payload = {
+        "username": username,
+        "file": buffer,
+    }
+
+    let result = await client.db(database_name).collection("avatars").insertOne(payload);
+    return result.ops[0]._id;
+}
+
+async function get_avatar(username, avatar_id, user_id) {
+    if (avatar_id == null) {
+        return get_user_identicon(user_id);
+    }
+    let result = await client.db(database_name).collection("avatars").findOne({
+        "username": username, "_id": ObjectId(avatar_id)
+    });
+
+    if (result == null) {
+        return get_user_identicon(user_id);
+    }
+    return result.file.buffer;
+}
 
 function isAdminAuthenticated(req, res, next) {
     if (!req.session.adminAuthenticated) {
@@ -329,7 +404,7 @@ async function createUser(username, password, email, bio, reviews) {
                 "firstname": null,
                 "lastname": null,
                 "bio": null,
-                "image": null
+                "avatar_id": null
             }
         });
         console.log(`user created with username: ${username}`);
@@ -418,6 +493,12 @@ async function getReviews(username) {
     return result;
 }
 
+function get_user_identicon(user_id) {
+    let ret = new Identicon(user_id, 480).toString();
+    ret = new Buffer.from(ret, 'base64');
+    return ret;
+}
+
 app.get("/searchProduct", isUserAuthenticated, async function (req, res) {
 
     //   let categories = await getCategories();
@@ -489,7 +570,11 @@ app.get("/profile", async function (req, res) {
 app.get("/profile/edit", async function (req, res) {
     var cUser = req.session.name;
     const userProf = await getUser(cUser);
-    res.render("profileEdit", { "userProf": userProf })
+
+    res.render("profileEdit",
+        {
+            "userProf": userProf,
+        })
 })
 
 //Route for User Profile Page
@@ -561,9 +646,6 @@ async function getUser(username) {
     if (!user) {
         return null;
     }
-    if (!user.profile.image) {
-        user.profile.image = new Identicon(user._id.toString(), 480).toString();
-    }
 
     return user;
 }
@@ -611,7 +693,7 @@ async function setReview(user_for, user_by, rating, text) {
 
 }
 
-async function setProfile(username, firstname, lastname, bio, image) {
+async function setProfile(username, firstname, lastname, bio, avatar_id) {
     let user = await client.db(database_name).collection("users").findOne({ "username": username });
     if (!user) {
         return;
@@ -622,7 +704,7 @@ async function setProfile(username, firstname, lastname, bio, image) {
     profile.firstname = firstname;
     profile.lastname = lastname;
     profile.bio = bio;
-    profile.image = image;
+    profile.avatar_id = avatar_id;
 
     profile = await client.db(database_name).collection("users").updateOne(
         { "username": username },
@@ -643,10 +725,13 @@ app.post("/setreview_debug", async function (req, res) {
 
 app.post("/setprofile", isUserAuthenticated, async function (req, res) {
     const new_profile = req.body;
-    await setProfile(req.session.name, new_profile.firstname, new_profile.lastname, new_profile.bio, new_profile.image);
+    console.log(new_profile);
+    let result = await setProfile(req.session.name, new_profile.firstname, new_profile.lastname, new_profile.bio, new_profile.avatar_id);
+
+    let resp = result != null ? { "success": 200 } : { "error": 500 };
 
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ "success": 200 }));
+    res.end(JSON.stringify(resp));
 });
 
 //starting server
