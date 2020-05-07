@@ -1,20 +1,32 @@
 <%- include('partials/header') -%>
+
 <nav class="navbar navbar-default">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="/searchProduct">Back</a>
-                    <a class="navbar-brand" href="/cart">Cart</a>
-                    <a class="navbar-brand" href="/logout">Logout</a>
-                </div>
-            </div>
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/searchProduct">Back</a>
+            <a class="navbar-brand" href="/cart">Cart</a>
+            <a class="navbar-brand" href="/logout">Logout</a>
+        </div>
+    </div>
 </nav>
 
-<h1>User Profile</h1>
-<p>This is your current information!</p>
 <body>
-    Username: <%= userProf.username %><br>
-    Password: <%= userProf.password %><br>
-    Email: <%= userProf.email %><br>
+    <h1>User Profile</h1>
+    <p>This is your current information!</p>
+
+    <div class="d-flex w-10 justify-content-center">
+        <div class="d-flex flex-column align-items-center w-25">
+            <img class="profilepic rounded m-3" src="data:image/png;base64,<%= userProf.profile.image %>" />
+            <p class="font-weight-bold">
+                <%= userProf.profile.firstname %> <%= userProf.profile.lastname %>
+            </p>
+            <p class="text-justify">
+                <%= userProf.profile.bio %>
+            </p>
+            <a href="/profile/edit" class="btn btn-success ml-auto"><span class="material-icons">edit</span></a>
+        </div>
+
+    </div>
 </body>
 
 

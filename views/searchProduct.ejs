@@ -1,35 +1,36 @@
-<%- include('partials/header'); -%> 
-    </head>
-    <body>
-        
-        <h1> Person Search <br>
+<%- include('partials/header'); -%>
+</head>
+
+<body>
+
+    <h1> Person Search <br>
         <p style="font-size:18px;">Leave keyword field empty and hit search to see all Users</p>
-        </h1>
+    </h1>
 
 
-        <form action="/products">
-   
-            Keyword: <input type="text" name="keyword">
-            
-            <button> Search! </button>
+    <form action="/products">
 
-        </form>
-        
-        <br>
-        <form action="/profilePage">
-            <button>User Profile</button>
-        </form>
-        
-        
-        <form action="/reviews">
-            <button>User Reviews</button>
-        </form>
-        
-        <br>
-        <form action="/logout">
+        Keyword: <input type="text" name="keyword">
+
+        <button> Search! </button>
+
+    </form>
+
+    <br>
+    <form action="/profile">
+        <button>User Profile</button>
+    </form>
+
+
+    <form action="/reviews">
+        <button>User Reviews</button>
+    </form>
+
+    <br>
+    <form action="/logout">
         <button> Logout </button>
-        </form>
+    </form>
 
-    </body>
+</body>
 
 <%- include('partials/footer'); -%>

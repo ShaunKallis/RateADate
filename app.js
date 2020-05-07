@@ -8,6 +8,8 @@ const session = require('express-session');
 const crypto = require('crypto');
 const scrypt = require('scrypt');
 
+const Identicon = require('identicon.js');
+
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://mRidge:duzSEpQQh4fTIqSm@cluster0-2dcbj.mongodb.net/test?retryWrites=true&w=majority";
 const database_name = "RateADate";
@@ -323,7 +325,12 @@ async function createUser(username, password, email, bio, reviews) {
             "password_hash": password_hash,
             "password_salt": password_salt,
             "email": email,
-            "bio": bio
+            "profile": {
+                "firstname": null,
+                "lastname": null,
+                "bio": null,
+                "image": null
+            }
         });
         console.log(`user created with username: ${username}`);
     }
@@ -390,18 +397,20 @@ async function clearCart(username) {
 async function addReview(byUsername, username, rating, textReview) {
     console.log(byUsername + " " + username + " " + rating + " " + textReview);
     var result = await client.db("RateADate").collection("reviews").updateOne(
-    {  
-        "by": byUsername, 
-        "for": username 
-        
-    }, 
-    {$set: {
-        "by": byUsername, 
-        "for": username, 
-        "rating": rating, 
-        "text": textReview 
-        
-    }}, {upsert: true});
+        {
+            "by": byUsername,
+            "for": username
+
+        },
+        {
+            $set: {
+                "by": byUsername,
+                "for": username,
+                "rating": rating,
+                "text": textReview
+
+            }
+        }, { upsert: true });
 }
 
 async function getReviews(username) {
@@ -467,13 +476,20 @@ app.get("/reviews/:id", async function (req, res) {
 });//productDetails
 
 //Route for User Profile Page
-app.get("/profilePage", async function (req, res) {
+app.get("/profile", async function (req, res) {
     //var cUser = req.cookie.cookieUser;
     var cUser = req.session.name;
-    console.log(cUser);
-    const userProf = await client.db(database_name).collection("users").findOne({ username: cUser });
-    console.log(userProf);
+    // console.log(cUser);
+    const userProf = await getUser(cUser);
+    // console.log(userProf);
     res.render("profilePage", { "userProf": userProf })
+})
+
+//Route for User Profile Edit Page
+app.get("/profile/edit", async function (req, res) {
+    var cUser = req.session.name;
+    const userProf = await getUser(cUser);
+    res.render("profileEdit", { "userProf": userProf })
 })
 
 //Route for User Profile Page
@@ -539,6 +555,19 @@ async function getProduct(name) {
     return result;
 }//getproduct
 
+async function getUser(username) {
+    let user = await client.db(database_name).collection("users").findOne({ username: username });
+
+    if (!user) {
+        return null;
+    }
+    if (!user.profile.image) {
+        user.profile.image = new Identicon(user._id.toString(), 480).toString();
+    }
+
+    return user;
+}
+
 async function getReviewsFor(username) {
     let result = await client.db(database_name).collection("reviews").find({ "for": username }).toArray();
     return result;
@@ -562,7 +591,7 @@ async function setReview(user_for, user_by, rating, text) {
 
     if (!review) {
         review_exists = false;
-        review = { "for": user_for, "by": user_by };
+        review = {};
     }
 
     review.rating = rating;
@@ -580,8 +609,30 @@ async function setReview(user_for, user_by, rating, text) {
 
     return review;
 
-
 }
+
+async function setProfile(username, firstname, lastname, bio, image) {
+    let user = await client.db(database_name).collection("users").findOne({ "username": username });
+    if (!user) {
+        return;
+    }
+
+    profile = {}
+
+    profile.firstname = firstname;
+    profile.lastname = lastname;
+    profile.bio = bio;
+    profile.image = image;
+
+    profile = await client.db(database_name).collection("users").updateOne(
+        { "username": username },
+        {
+            $set: { "profile": profile }
+        });
+    return profile;
+}
+
+
 
 app.post("/setreview_debug", async function (req, res) {
     let result = await setReview(req.body.for, req.body.by, req.body.rating, req.body.text);
@@ -590,6 +641,13 @@ app.post("/setreview_debug", async function (req, res) {
     res.end(JSON.stringify(result));
 })
 
+app.post("/setprofile", isUserAuthenticated, async function (req, res) {
+    const new_profile = req.body;
+    await setProfile(req.session.name, new_profile.firstname, new_profile.lastname, new_profile.bio, new_profile.image);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ "success": 200 }));
+});
 
 //starting server
 app.listen(process.env.PORT, process.env.IP, function () {

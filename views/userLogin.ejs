@@ -1,39 +1,44 @@
 <%- include('partials/header'); -%>
-        <script>
-            $(document).ready(function() {
-                $("#loginBtn").on("click", function(){
-                    $.ajax({
-                        method: "POST",
-                        url: "/userLoginProcess",
-                        dataType: "json",
-                        data: { "username":$("#username").val(),
-                                "password":$("#password").val()},
-                        success: function(result,status) {
-                            //alert(result);
-                            if (!result){
-                                alert("Wrong credentials!");
-                            }else{
-                                location.href = "/searchProduct"; 
-                            }
-                        }
-                    });//ajax
-                }); //click
-            }); //document.ready
-        </script>
-    </head>        
-    
-    <body>
-        
-        <h1> User Login Screen </h1>
+<script>
+    $(document).ready(function () {
+        $("form").submit(function () {
+            $.ajax({
+                method: "POST",
+                url: "/userLoginProcess",
+                dataType: "json",
+                data: {
+                    "username": $("#username").val(),
+                    "password": $("#password").val()
+                },
+                success: function (result, status) {
+                    //alert(result);
+                    if (!result) {
+                        alert("Wrong credentials!");
+                    } else {
+                        location.href = "/searchProduct";
+                    }
+                }
+            });//ajax
+            return false;
+        }); //submit
+    }); //document.ready
+</script>
+</head>
 
-        
-            Username: <input type="text" name="username" id="username"> <br>
-            Password: <input type="password" name="password" id="password"> <br>
-            
-            <br>
-            <button id="loginBtn"> Login! </button>
-            <br>
-            <a href="/">Back to Welcome Page</a>
-        
-    </body>
+<body>
+
+    <h1> User Login Screen </h1>
+
+    <form>
+        Username: <input type="text" name="username" id="username"> <br>
+        Password: <input type="password" name="password" id="password"> <br>
+
+        <br>
+        <button id="loginBtn"> Login! </button>
+        <br>
+    </form>
+    <a href="/">Back to Welcome Page</a>
+
+</body>
+
 </html>

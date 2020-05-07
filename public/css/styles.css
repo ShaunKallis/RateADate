@@ -60,6 +60,11 @@ html {
     height: 400px;
 }
 
+img.profilepic {
+    width: 15em;
+    height: 15em;
+}
+
 footer {
     text-align: center;
     display:flex;
