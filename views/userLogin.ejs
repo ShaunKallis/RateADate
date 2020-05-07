@@ -29,14 +29,19 @@
 
     <h1> User Login Screen </h1>
 
-    <form>
-        Username: <input type="text" name="username" id="username"> <br>
-        Password: <input type="password" name="password" id="password"> <br>
+    <div class="d-flex justify-content-center m-5">
+        <form class="w-25">
+            <label for="username" class="mr-auto">Username</label>
+            <input class="form-control mb-3" type="text" id="username" name="username" placeholder="Username">
+            <label for="password" class="mr-auto">Password</label>
+            <input class="form-control mb-3" type="password" id="password" name="password" placeholder="Password">
 
-        <br>
-        <button id="loginBtn"> Login! </button>
-        <br>
-    </form>
+            <br>
+            <button class="btn btn-success ml-auto" id="loginBtn"> Login! </button>
+            <br>
+        </form>
+
+    </div>
     <a href="/">Back to Welcome Page</a>
 
 </body>
