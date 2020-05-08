@@ -24,8 +24,7 @@
       });//ajax
     }); //click
   }); //document.ready
-  
-  var avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1); 
+    
 </script>
 
 <head>
@@ -165,7 +164,7 @@
       <div style="width: 100%">
         <div class="rating-block">
           <h4>Average user rating</h4>
-          <h2 class="bold padding-bottom-7"><%= avgRating%>
+          <h2 class="bold padding-bottom-7"><%=avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1)%>
           
             <small>/ 5</small>
           </h2>
