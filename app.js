@@ -59,7 +59,7 @@ app.post('/cdn/avatars', isUserAuthenticated, upload.single('avatar'), async fun
 
 })
 
-app.get('/cdn/avatars/:username.png', async function (req, res, next) {
+app.get('/cdn/avatars/:username.jpg', async function (req, res, next) {
     let username = req.params.username;
     let user_obj = await getUser(username);
 
