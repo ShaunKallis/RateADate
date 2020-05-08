@@ -473,6 +473,9 @@ async function clearCart(username) {
 
 async function addReview(byUsername, username, rating, textReview) {
     console.log(byUsername + " " + username + " " + rating + " " + textReview);
+    var dateFormat = require('dateformat');
+    var now = new Date();
+    var format = dateFormat(now, "mmmm dS, yyyy");
     var result = await client.db("RateADate").collection("reviews").updateOne(
         {
             "by": byUsername,
@@ -484,9 +487,10 @@ async function addReview(byUsername, username, rating, textReview) {
                 "by": byUsername,
                 "for": username,
                 "rating": rating,
-                "text": textReview
+                "text": textReview,
+                "dateAdded": format
 
-            }
+            },
         }, { upsert: true });
 }
 
@@ -546,8 +550,6 @@ app.get("/reviews/:id", async function (req, res) {
     var cUser = req.params.id;
     let rows = await getReviews(cUser);
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
-    // console.log("userProf: ", userProf);
-    // console.log("data from userProf: ", userProf.reviews);
     let reviews = await getReviewsFor(cUser);
 
     res.render("reviews", {
@@ -677,15 +679,20 @@ async function setReview(user_for, user_by, rating, text) {
         review_exists = false;
         review = {};
     }
+    var dateFormat = require('dateformat');
+    var now = new Date();
+    var format = dateFormat(now, "mmmm dS, yyyy");
 
     review.rating = rating;
     review.text = text;
+    review.dateAdded = format;
 
     if (review_exists) {
         review = await client.db(database_name).collection("reviews").updateOne(
             { "for": user_for, "by": user_by },
             {
-                $set: review
+                $set: review,
+                $setOnInsert: { dateAdded: new Date() }
             });
     } else {
         review = await client.db(database_name).collection("reviews").insertOne(review);
