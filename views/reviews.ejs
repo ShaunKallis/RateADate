@@ -25,7 +25,12 @@
     }); //click
   }); //document.ready
   
-  var avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1); 
+  var avgRating = "No Ratings";
+  
+  if(reviews != null){
+    avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1); 
+  }
+    
 </script>
 
 <head>

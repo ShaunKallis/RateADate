@@ -1,4 +1,7 @@
 
+//@TODO: add avg on search page
+//fix avg rating
+
 const request = require("request");
 var cookieParser = require('cookie-parser');
 
