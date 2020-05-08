@@ -63,6 +63,12 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
   <style>
+  .avatar {
+  vertical-align: middle;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
     body {
       padding-top: 70px;
     }
@@ -74,6 +80,7 @@
     .checked {
       color: orange;
     }
+
 
     .rating-block {
       background-color: #FAFAFA;
@@ -138,7 +145,7 @@
 <body>
   Username: <%= userProf.username %><br>
   Email: <%= userProf.email %><br>
-  <img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.username %>.png">
+  <img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.username %>.png" />
   <br>
 
   <!--<nav class="navbar navbar-default navbar-fixed-top">-->
@@ -208,11 +215,10 @@
         <div class="review-block">
           <div class="row">
             <div class="col-sm-3">
-
-              <div class="review-block-name"><a href="<%= userProf.by %>"><%= userProf.by %></a></div>
-              
-              <a href="reviews/<%= userProf.by %>"><img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.by %>.png" style="width:40px; height:40px"></a>
-
+              <img class="avatar" src="/cdn/avatars/<%= userProf.by %>.png" />
+              <div class="review-block-name"><a href="#"><%= userProf.by %></a></br>
+              <%=userProf.dateAdded %>
+              </div>
             </div>
             
             <div class="col-sm-9">

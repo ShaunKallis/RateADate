@@ -185,7 +185,6 @@ app.get("/guidelines", async function (req, res) {
 
 // from lab 10, admin side of page
 app.get("/admin", isAdminAuthenticated, async function (req, res) {
-    console.log("authenticated: ", req.session.authenticated);
     if (req.session.adminAuthenticated) {
         let productList = await getProductList();
         res.render("admin", { "productList": productList });
@@ -549,6 +548,7 @@ app.get("/products", isUserAuthenticated, async function (req, res) {
 app.get("/reviews/:id", async function (req, res) {
     var cUser = req.params.id;
     let rows = await getReviews(cUser);
+    
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
     let reviews = await getReviewsFor(cUser);
 
@@ -611,9 +611,6 @@ app.post("/index", function (req, res) {
     var tempPass = req.body.password;
     var tempEmail = req.body.email;
 
-    console.log(tempName)
-    console.log(tempPass)
-    console.log(tempEmail)
     createUser(tempName, tempPass, tempEmail)
     //Redirect to Main Page
     res.redirect("/")
@@ -633,7 +630,6 @@ app.get("/productInfo", isUserAuthenticated, async function (req, res) {
 
 async function getProduct(name) {
     var result;
-    console.log(`getProduct run`);
     if (name == '') {
         result = await client.db("RateADate").collection("users").find().toArray();
     } else {
@@ -734,7 +730,6 @@ app.post("/setreview_debug", async function (req, res) {
 
 app.post("/setprofile", isUserAuthenticated, async function (req, res) {
     const new_profile = req.body;
-    console.log(new_profile);
     let result = await setProfile(req.session.name, new_profile.firstname, new_profile.lastname, new_profile.bio, new_profile.avatar_id);
 
     let resp = result != null ? { "success": 200 } : { "error": 500 };
