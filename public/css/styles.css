@@ -116,7 +116,7 @@ footer {
     display:flex;
     right:0px;
     color:royalblue;
-    /*background-image: url("../img/bottom.jpg");*/
+    background-image: url("../img/bottom.jpg");
     background-color: lightpink;
     padding: 20px;
     width: 430px;
