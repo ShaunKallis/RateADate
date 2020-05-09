@@ -343,10 +343,18 @@ app.get("/searchPerson", isUserAuthenticated, async function (req, res) {
 
 // from lab 9 user side of page
 app.get("/users", isUserAuthenticated, async function (req, res) {
-    let rows = await getProduct(req.query.keyword);
+    let users = await getProduct(req.query.keyword);
+    
+    var reviews = new Map();
+    
+    var i;
+    for(i = 0; i < users.length; i++){
+        reviews.set(users[i].username, await getReviewsForAvg(users[i].username));
+    }
 
     res.render("users", { 
-        "records": rows,
+        "records": users,
+        "reviews": reviews,
         
     });
 
@@ -461,6 +469,17 @@ async function getReviewsFor(username) {
 async function getReviewsBy(username) {
     let result = await client.db(database_name).collection("reviews").find({ "by": username }).toArray();
     return result;
+}
+
+async function getReviewsForAvg(username){
+    let reviews = await getReviewsFor(username);
+    let sum = 0;
+    var i;
+    for(i = 0; i < reviews.length; i++){
+        sum += +reviews[i].rating;
+    }
+    
+    return sum/reviews.length;
 }
 
 app.get("/api/reviews", async function (req, res) {

@@ -177,7 +177,7 @@
         <div class="rating-block" id="hide">
           <h4>Average user rating</h4>
           
-          <h2 class="bold padding-bottom-7"><%=avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1)%>
+          <h2 class="bold padding-bottom-7"><%=avgRating = +(reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)) || "No Reviews"%>
                     </h2>
           <button id="s1" type="button" data-value="1" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
             <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
