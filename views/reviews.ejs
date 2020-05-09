@@ -134,7 +134,7 @@
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <div class="navbar-header">
-      <a class="navbar-brand" href="/searchProduct">Back</a>
+      <a class="navbar-brand" href="/searchPerson">Back</a>
       <a class="navbar-brand" href="/logout">Logout</a>
     </div>
   </div>
@@ -176,6 +176,7 @@
       <div style="width: 100%">
         <div class="rating-block" id="hide">
           <h4>Average user rating</h4>
+          
           <h2 class="bold padding-bottom-7"><%=avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1)%>
                     </h2>
           <button id="s1" type="button" data-value="1" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">

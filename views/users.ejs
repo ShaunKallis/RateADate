@@ -15,11 +15,19 @@
     //     }); //click
     // }); //document.ready
 </script>
+
+<style>
+  .avatar {
+  vertical-align: middle;
+  width: 75;
+  height: 75px;
+}
+</style>
 </head>
     <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="/searchProduct">Back</a>
+                    <a class="navbar-brand" href="/searchPerson">Back</a>
                     <a class="navbar-brand" href="/logout">Logout</a>
                 </div>
             </div>
@@ -39,12 +47,12 @@
         <% records.forEach( function(record){ %>
             <div class="col-md-3 col-sm-6">
                 <div class="thumbnail">
-                    <img src = <%= record.profilePic %> >
+                    <img class="avatar" src="/cdn/avatars/<%= record.username %>.png" /><br><br>
                     <div class="caption">
                         <h4><%= record.username %></h4>
                     </div>
                     <div>
-                        Rating: <%=record.avgRating%><br>
+                        Rating: <br><br>
                         <div class="w3-show-inline-block">
                         <div class="w3-bar">
                             <a href="/reviews/<%= record.username %>" class="btn btn-primary">View Profile</a>
@@ -60,7 +68,7 @@
         <!--<button> Go to cart </button>-->
         <!--</form>-->
         <br>
-        <form action="/searchProduct">
+        <form action="/searchPerson">
         <button> Back to search </button>
         </form>
         <br>

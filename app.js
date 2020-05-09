@@ -168,7 +168,13 @@ async function adminLoginAttempt(username, password) {
 
 //routes
 app.get("/", function (req, res) {
-    res.render("index");
+    if (req.session.userAuthenticated) {
+        let userProf = getUser(req.session.name);
+        res.redirect("/profile");
+    }
+    else {
+        res.render("index");
+    }
 
 });
 app.get("/userLogin", async function (req, res) {
@@ -248,69 +254,6 @@ app.get("/logout", function (req, res) {
     req.session.destroy();
     res.redirect("/");   //taking user back to login screen
 });
-app.get("/addProduct", isAdminAuthenticated, async function (req, res) {
-    if (req.session.adminAuthenticated) {
-        // res.render("newProduct");
-        let keyword = "unown";
-        console.log(`keyword: ${req.query.keyword}`);
-        if (req.query.keyword != null) {
-            console.log(`a`);
-            if (req.query.keyword.localeCompare("") != 0) {
-                console.log(`b`);
-                keyword = req.query.keyword;
-            }
-        }
-        keyword = keyword.toLowerCase();
-        let parsedData = await getPokemon(keyword);
-        res.render("newProduct", { "parsedData": parsedData });
-    } else {                                    //if user hasn't authenticated
-        res.render("adminLogin");                  //send them to the login screen
-    }
-});
-app.post("/addProduct", isAdminAuthenticated, async function (req, res) {
-    const newPokemon = req.body;
-    const result = await insertProduct(newPokemon);
-    console.log(`Pokemon added: ${result}`);
-    if (!result) {
-        console.log("Pokemon's name: " + newPokemon.name);
-        return res.redirect("updateProduct?pokemonName=" + newPokemon.name);
-    }
-});
-app.get("/updateProduct", isAdminAuthenticated, async function (req, res) {
-    if (req.session.adminAuthenticated) {
-        let productInfo = await getProductInfoAdmin(req.query.pokemonName);
-        console.log(`pokemon info: ${productInfo}`);
-        res.render("updateProduct", { "productInfo": productInfo });
-    } else {                                    //if user hasn't authenticated
-        res.render("adminLogin");                  //send them to the login screen
-    }
-});
-app.post("/updateProduct", isAdminAuthenticated, async function (req, res) {
-    console.log(`Post for updateProduct`);
-    const updatedPokemon = req.body;
-    console.log(updatedPokemon);
-    const result = client.db("pokemondb").collection("pokemon").updateOne(
-        { name: updatedPokemon.name },
-        { $set: updatedPokemon }
-    );
-    console.log(`result for post: ${result}`);
-    res.redirect('/admin');
-});
-app.get("/deleteProduct", isAdminAuthenticated, async function (req, res) {
-    let result = await deleteProduct(req.query.pokemonName);
-    console.log(result);
-    let message = "Product WAS NOT deleted!";
-    if (result.deletedCount > 0) {
-        message = "Product successfully deleted!";
-    }
-    let productList = await getProductList();
-    res.render("admin", { "productList": productList });
-});
-
-
-// app.post("/stats", isAdminAuthenticated, async function(req, res) {
-//     res.send(await getStats(req.body.command));
-// });
 
 app.get("/adminStats", isAdminAuthenticated, function (req, res) {
 
@@ -340,49 +283,8 @@ async function insertProduct(body) {
 }
 
 async function getProductList() {
-
-    console.log(`getProductList`);
     const result = await client.db("RateADate").collection("users").find().toArray();
-    console.log(`number of pokemon in cluster: ${result.length}`);
     return result;
-}
-
-async function addToCart(username, pokemonName, quantityChosen) {
-    quantityChosen = parseInt(quantityChosen);
-    var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": pokemonName });
-
-    var result = await client.db(database_name).collection("users").findOne({ "username": username });
-    console.log(result);
-    if (result.cart == null) {
-        console.log("empty array");
-        console.log(pokemon);
-        result.cart = [[pokemonName, pokemon.price, quantityChosen]];
-    } else {
-        var index;
-        var found = false;
-        for (index = 0; index < result.cart.length; index++) {
-            if (result.cart[index][0] == pokemonName) {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            result.cart[index][2] = quantityChosen;
-        }
-        else {
-            result.cart[result.cart.length] = [pokemonName, pokemon.price, quantityChosen];
-        }
-    }
-    console.log(`new cart: `);
-    var index;
-    for (index = 0; index < result.cart.length; index++) {
-        console.log(result.cart[index]);
-    }
-    result = await client.db(database_name).collection("users").updateOne(
-        { "username": username },
-        {
-            $set: { "cart": result.cart }
-        });
 }
 
 async function createUser(username, password, email, bio, reviews) {
@@ -412,63 +314,6 @@ async function createUser(username, password, email, bio, reviews) {
     }
     return result;
 }
-
-async function getProductInfoAdmin(pokemonName) {
-    console.log(`Name: ${pokemonName}`);
-    const result = await client.db("pokemondb").collection("pokemon").findOne({ "name": { $regex: new RegExp(pokemonName, "i") } });
-    console.log(`result: ${result}`);
-    return result;
-}
-
-async function updateProduct(updatedPokemon) {
-    const result = await client.db("pokemondb").collection("pokemon").updateOne(updatedPokemon);
-    console.log(`${result.matchedCount} document(s) matched the query criteria`);
-    console.log(`${result.modifiedCount} document(s) was/were updated`);
-}
-
-async function deleteProduct(pokemonName) {
-    const result = await client.db("pokemondb").collection("pokemon").deleteOne({ name: pokemonName });
-    console.log(`${result.deletedCount} pokemon was/were deleted`);
-    return result;
-}
-
-async function clearCart(username) {
-    var user = await client.db(database_name).collection("users").findOne({ "username": username });
-    var index;
-    var result;
-    var pokemonName;
-    try {
-        for (index = 0; index < user.cart.length; index++) {
-            pokemonName = user.cart[index][0];
-            var pokemon = await client.db("pokemondb").collection("pokemon").findOne({ "name": user.cart[index][0] });
-            pokemon.quantity -= user.cart[index][2];
-            await client.db("pokemondb").collection("pokemon").updateOne({ "name": pokemon.name }, { $set: { "quantity": pokemon.quantity } });
-        }
-    } catch (e) {
-        console.log("cart is empty");
-    }
-    result = await client.db(database_name).collection("users").updateOne({ "username": username }, { $unset: { cart: null } });
-}
-
-
-// ADDS REVIEWS TO USER AND NOT REVIEWS DATABASE
-// async function addReview(username, rating, textReview) {
-//     var result = await client.db("RateADate").collection("users").findOne({ "username": username });
-//     console.log(result);
-
-
-//     result = await client.db("RateADate").collection("users").updateOne(
-//         { username: username },
-//         {
-//             $set:
-//             {
-//                 reviews: {
-//                     starRating: rating,
-//                     textRating: textReview
-//                 }
-//             }
-//         });
-// }
 
 async function addReview(byUsername, username, rating, textReview) {
     console.log(byUsername + " " + username + " " + rating + " " + textReview);
@@ -504,44 +349,23 @@ function get_user_identicon(user_id) {
     return ret;
 }
 
-app.get("/searchProduct", isUserAuthenticated, async function (req, res) {
+app.get("/searchPerson", isUserAuthenticated, async function (req, res) {
 
     //   let categories = await getCategories();
     //console.log(categories);
     //   res.render("searchProduct", {"categories":categories});
-    res.render("searchProduct");
-
-});
-
-app.get("/cart", isUserAuthenticated, async function (req, res) {
-    //   console.log("happens")
-    let items = await getCart(req.session.name);
-    //   console.log(items);
-    let total = 0;
-
-    if (items != null) {
-        items.forEach(function (item) {
-            total += item[1] * item[2]
-        })
-        res.render("cart", { "items": items, "total": total });
-    } else {
-        res.render("cart", { "items": [, ,], "total": total });
-    }
-
-});
-
-app.get("/checkout", isUserAuthenticated, async function (req, res) {
-
-    let categories = await clearCart(req.session.name);
-    //console.log(categories);
-    res.render("checkout", { "categories": categories });
+    res.render("searchPerson");
 
 });
 
 // from lab 9 user side of page
-app.get("/products", isUserAuthenticated, async function (req, res) {
+app.get("/users", isUserAuthenticated, async function (req, res) {
     let rows = await getProduct(req.query.keyword);
-    res.render("products", { "records": rows });
+
+    res.render("users", { 
+        "records": rows,
+        
+    });
 
 });//product
 
