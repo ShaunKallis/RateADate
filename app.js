@@ -215,9 +215,7 @@ app.post("/userLoginProcess", function (req, res) {
     userLoginAttempt(req.body.username, req.body.password).then(result => {
         console.log(`result of login attempt: ${result}`);
         if (result == true) {
-            console.log(req.body.username);
             req.session.name = req.body.username;
-            console.log(req.session.name);
             req.session.userAuthenticated = true;
             res.send({ "loginSuccess": true });
         } else {
@@ -271,24 +269,12 @@ function hash_password(password, salt) {
 }
 
 
-async function insertProduct(body) {
-    if (await client.db("pokemondb").collection("pokemon").findOne({ name: { $regex: new RegExp(body.name, "i") } })) {
-        console.log(`${body.name} already in database`);
-        return false;
-    } else {
-        const result = await client.db("pokemondb").collection("pokemon").insertOne(body);
-        console.log(`${body.name} inserted in database`);
-        return true;
-    }
-}
-
 async function getProductList() {
     const result = await client.db("RateADate").collection("users").find().toArray();
     return result;
 }
 
 async function createUser(username, password, email, bio, reviews) {
-    console.log(`createUser called`);
     let result = await client.db("RateADate").collection("users").findOne({ "username": username });
     if (result != null) {
         // do something to signify error creating account
@@ -351,9 +337,6 @@ function get_user_identicon(user_id) {
 
 app.get("/searchPerson", isUserAuthenticated, async function (req, res) {
 
-    //   let categories = await getCategories();
-    //console.log(categories);
-    //   res.render("searchProduct", {"categories":categories});
     res.render("searchPerson");
 
 });
@@ -411,8 +394,6 @@ app.get("/reviews", async function (req, res) {
     var cUser = req.session.name;
     let rows = await getReviews(cUser);
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
-    // console.log("userProf: ", userProf);
-    // console.log("data from userProf: ", userProf.reviews);
     let reviews = await getReviewsFor(cUser);
 
     res.render("reviews", {
@@ -424,7 +405,6 @@ app.get("/reviews", async function (req, res) {
 
 app.post("/addreview", isUserAuthenticated, async function (req, res) {
     const newReview = req.body;
-    console.log("review: ", newReview);
     let rows = await (addReview(req.session.name, newReview.username, newReview.rating, newReview.textReview));
 });
 
@@ -460,7 +440,6 @@ async function getProduct(name) {
         result = await client.db("RateADate").collection("users").find({ username: name }).toArray();
     }
 
-    console.log(result);
     return result;
 }//getproduct
 
