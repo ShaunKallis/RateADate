@@ -10,6 +10,7 @@ const session = require('express-session');
 const crypto = require('crypto');
 const multer = require('multer');
 const scrypt = require('scrypt');
+const dateFormat = require('dateformat');
 
 const Identicon = require('identicon.js');
 
@@ -303,7 +304,6 @@ async function createUser(username, password, email, bio, reviews) {
 
 async function addReview(byUsername, username, rating, textReview) {
     console.log(byUsername + " " + username + " " + rating + " " + textReview);
-    var dateFormat = require('dateformat');
     var now = new Date();
     var format = dateFormat(now, "mmmm dS, yyyy");
     var result = await client.db("RateADate").collection("reviews").updateOne(
@@ -322,6 +322,11 @@ async function addReview(byUsername, username, rating, textReview) {
 
             },
         }, { upsert: true });
+}
+
+async function getReviews(username) {
+    const result = await client.db("RateADate").collection("users").find({ "name": username }).toArray();
+    return result;
 }
 
 function get_user_identicon(user_id) {
@@ -355,6 +360,20 @@ app.get("/users", isUserAuthenticated, async function (req, res) {
 
 });//product
 
+app.get("/reviews/:id", async function (req, res) {
+    var cUser = req.params.id;
+    let rows = await getReviews(cUser);
+
+    const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
+    let reviews = await getReviewsFor(cUser);
+
+    res.render("reviews", {
+        "userProf": userProf,
+        "reviews": reviews,
+        "records": rows,
+    });
+
+});//productDetails
 
 //Route for User Profile Page
 app.get("/profile", async function (req, res) {
