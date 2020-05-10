@@ -131,14 +131,6 @@
   </style>
 </head>
 
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="/searchPerson">Back</a>
-      <a class="navbar-brand" href="/logout">Logout</a>
-    </div>
-  </div>
-</nav>
 
 <h1>User Profile</h1>
 
@@ -173,26 +165,26 @@
 
     <div class="row">
       <!--<div class="col-sm-3" style="width: 100%">-->
-      <div style="width: 100%">
-        <div class="rating-block" id="hide">
+      <div style="width: 100%;">
+        <div class="rating-block" style="background-color: rgb(77, 121, 255);" id="hide">
           <h4>Average user rating</h4>
           
           <h2 class="bold padding-bottom-7"><%=avgRating = +(reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)) || "No Reviews"%>
                     </h2>
           <button id="s1" type="button" data-value="1" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
           <button id="s2" type="button" data-value="2" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
           <button id="s3" type="button" data-value="3" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
           <button id="s4" type="button" data-value="4" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
           <button id="s5" type="button" data-value="5" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
           
           <input type="hidden" id="star" />
@@ -210,10 +202,10 @@
 
 
     <% reviews.forEach(function(userProf){  %>
-    <div class="row">
+    <div class="row" >
       <div class="col-sm-7">
         <hr />
-        <div class="review-block">
+        <div class="review-block" style="background-color: rgb(77, 121, 255);">
           <div class="row">
             <div class="col-sm-3">
               <img class="avatar" src="/cdn/avatars/<%= userProf.by %>.png" />
@@ -240,7 +232,7 @@
                 <!--  <span class="glyphicon glyphicon-star" aria-hidden="true"></span>-->
                 <!--</button>-->
                 <% for (var i = 0; i < userProf.rating; i++) { %>
-                      <span class="fa fa-star checked"></span>
+                      <span class="fa fa-heart checked"></span>
                 <% } %>
               </div>
               <div class="review-block-description"><%= userProf.text %></div>
