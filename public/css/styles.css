@@ -51,6 +51,7 @@ h1 {
     background-color: black;
     margin-left: 20px;
     font-family: 'Courier New', cursive;
+    border-radius: 15px;
 }
 
 #nava {
@@ -115,14 +116,13 @@ footer {
     text-align: center;
     display:flex;
     right:0px;
-    color:royalblue;
-    background-image: url("../img/bottom.jpg");
-    background-color: lightpink;
+    color:lightblue;
+    background-image: url("../img/HeartsFuzz335x175.jpg");
     padding: 20px;
-    width: 430px;
-    height: 230px;
+    width: 335px;
+    height: 175px;
     margin: auto;
-    margin: 25px auto;
+    border-radius: 8px;
     /*text-shadow: 1px 1px 1px black, */
     /*            -1px 1px 1px black,*/
     /*            1px -1px 1px black;*/
