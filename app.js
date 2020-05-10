@@ -10,6 +10,7 @@ const session = require('express-session');
 const crypto = require('crypto');
 const multer = require('multer');
 const scrypt = require('scrypt');
+const dateFormat = require('dateformat');
 
 const Identicon = require('identicon.js');
 
@@ -303,7 +304,6 @@ async function createUser(username, password, email, bio, reviews) {
 
 async function addReview(byUsername, username, rating, textReview) {
     console.log(byUsername + " " + username + " " + rating + " " + textReview);
-    var dateFormat = require('dateformat');
     var now = new Date();
     var format = dateFormat(now, "mmmm dS, yyyy");
     var result = await client.db("RateADate").collection("reviews").updateOne(
@@ -344,18 +344,18 @@ app.get("/searchPerson", isUserAuthenticated, async function (req, res) {
 // from lab 9 user side of page
 app.get("/users", isUserAuthenticated, async function (req, res) {
     let users = await getProduct(req.query.keyword);
-    
+
     var reviews = new Map();
-    
+
     var i;
-    for(i = 0; i < users.length; i++){
+    for (i = 0; i < users.length; i++) {
         reviews.set(users[i].username, await getReviewsForAvg(users[i].username));
     }
 
-    res.render("users", { 
+    res.render("users", {
         "records": users,
         "reviews": reviews,
-        
+
     });
 
 });//product
@@ -363,7 +363,7 @@ app.get("/users", isUserAuthenticated, async function (req, res) {
 app.get("/reviews/:id", async function (req, res) {
     var cUser = req.params.id;
     let rows = await getReviews(cUser);
-    
+
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
     let reviews = await getReviewsFor(cUser);
 
@@ -400,20 +400,21 @@ app.get("/profile/edit", async function (req, res) {
 app.get("/reviews", async function (req, res) {
     //var cUser = req.cookie.cookieUser;
     var cUser = req.session.name;
-    let rows = await getReviews(cUser);
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
     let reviews = await getReviewsFor(cUser);
 
     res.render("reviews", {
         "userProf": userProf,
         "reviews": reviews,
-        "records": rows,
     })
 })
 
 app.post("/addreview", isUserAuthenticated, async function (req, res) {
     const newReview = req.body;
-    let rows = await (addReview(req.session.name, newReview.username, newReview.rating, newReview.textReview));
+    await (addReview(req.session.name, newReview.username, newReview.rating, newReview.textReview));
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ "success": 200 }));
 });
 
 //Create Account POST
@@ -471,15 +472,15 @@ async function getReviewsBy(username) {
     return result;
 }
 
-async function getReviewsForAvg(username){
+async function getReviewsForAvg(username) {
     let reviews = await getReviewsFor(username);
     let sum = 0;
     var i;
-    for(i = 0; i < reviews.length; i++){
+    for (i = 0; i < reviews.length; i++) {
         sum += +reviews[i].rating;
     }
-    
-    return sum/reviews.length;
+
+    return sum / reviews.length;
 }
 
 app.get("/api/reviews", async function (req, res) {
@@ -542,13 +543,6 @@ async function setProfile(username, firstname, lastname, bio, avatar_id) {
 }
 
 
-
-app.post("/setreview_debug", async function (req, res) {
-    let result = await setReview(req.body.for, req.body.by, req.body.rating, req.body.text);
-
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(result));
-})
 
 app.post("/setprofile", isUserAuthenticated, async function (req, res) {
     const new_profile = req.body;

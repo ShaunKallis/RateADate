@@ -1,7 +1,4 @@
 <%- include('partials/header') -%>
-<head>
-    <script defer src="passCheck.js"></script>
-</head>
 <h1>Create a new account time!</h1>
 <div id="error"></div>
 <form id="form" action="/index" method="POST">
@@ -13,13 +10,14 @@
     <div>
         (Must have 8 characters with at least 1 special character)<br>
         <label for="password">Password</label>
-        <input id="password" type="text" name="password" placeholder="Enter Password" pattern="(?=.*[^a-zA-Z0-9])(?=.*[!@#$%^&*_=+-]).{6,15}" minlength=6 required>
+        <input id="password" type="text" name="password" placeholder="Enter Password"
+            pattern="(?=.*[^a-zA-Z0-9])(?=.*[!@#$%^&*_=+-]).{6,15}" minlength=6 required>
     </div>
     <div>
         <label for="email">Email</label>
         <input id="email" type="text" name="email" placeholder="Enter Email" required>
     </div>
-    
+
     <button type="submit">Submit</button>
 </form>
 <%- include('partials/footer') -%>
