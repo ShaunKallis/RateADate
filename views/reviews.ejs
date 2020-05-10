@@ -107,6 +107,7 @@
     }
 
     .review-block-name {
+      color: #000000;
       font-size: 12px;
       margin: 10px 0;
     }
@@ -136,10 +137,27 @@
 <h1>User Profile</h1>
 
 <body>
-  Username: <%= userProf.username %><br>
-  Email: <%= userProf.email %><br>
-  <img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.username %>.png" />
+  <div class="d-flex w-10 justify-content-center">
+        <div class="d-flex flex-column align-items-center w-25">
+            <img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.username %>.png" />
+            <p class="font-weight-bold">
+                <%= userProf.profile.firstname %> <%= userProf.profile.lastname %>
+            </p>
+            <p class="text-justify">
+                <%= userProf.profile.bio %>
+            </p>
+        </div>
+
+    </div>
   <br>
+  
+   <br>
+
+    <form action="/guidelines">
+        <button>User Guidelines Page</button>
+    </form>
+
+    <br>
 
   <!--<nav class="navbar navbar-default navbar-fixed-top">-->
   <!--  <div class="container">-->
