@@ -136,7 +136,8 @@
 
 <body>
   Username: <%= userProf.username %><br>
-  Email: <%= userProf.email %><br>
+  Name:  <%= userProf.profile.firstname %> <%= userProf.profile.lastname %><br>
+  Bio: <%= userProf.profile.bio %><br>
   <img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.username %>.png" />
   <br>
 
