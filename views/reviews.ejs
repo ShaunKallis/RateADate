@@ -19,13 +19,12 @@
           "textReview": $("#textReview").val(),
         },
         success: function (result, status) {
-          console.log("hi");
         }
       });//ajax
+      window.location.reload();
     }); //click
   }); //document.ready
-  
-  var avgRating = (reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)).toFixed(1); 
+    
 </script>
 
 <head>
@@ -36,6 +35,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
   <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <title>Fixed Top Navbar Example for Bootstrap</title>
 
@@ -63,6 +63,12 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
   <style>
+  .avatar {
+  vertical-align: middle;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
     body {
       padding-top: 70px;
     }
@@ -71,6 +77,10 @@
       background-color: #D8D8D8;
       color: #FFF;
     }
+    .checked {
+      color: orange;
+    }
+
 
     .rating-block {
       background-color: #FAFAFA;
@@ -121,20 +131,13 @@
   </style>
 </head>
 
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand" href="/searchProduct">Back</a>
-      <a class="navbar-brand" href="/logout">Logout</a>
-    </div>
-  </div>
-</nav>
 
 <h1>User Profile</h1>
 
 <body>
   Username: <%= userProf.username %><br>
   Email: <%= userProf.email %><br>
+  <img class="profilepic rounded m-3" src="/cdn/avatars/<%= userProf.username %>.png" />
   <br>
 
   <!--<nav class="navbar navbar-default navbar-fixed-top">-->
@@ -162,27 +165,26 @@
 
     <div class="row">
       <!--<div class="col-sm-3" style="width: 100%">-->
-      <div style="width: 100%">
-        <div class="rating-block">
+      <div style="width: 100%;">
+        <div class="rating-block" style="background-color: rgb(77, 121, 255);" id="hide">
           <h4>Average user rating</h4>
-          <h2 class="bold padding-bottom-7"><%= avgRating%>
           
-            <small>/ 5</small>
-          </h2>
-          <button id="s1" type="button" data-value="1" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+          <h2 class="bold padding-bottom-7"><%=avgRating = +(reviews.reduce((a,{rating}) => a + parseInt(rating), 0)/(reviews.length)) || "No Reviews"%>
+                    </h2>
+          <button id="s1" type="button" data-value="1" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
-          <button id="s2" type="button" data-value="2" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+          <button id="s2" type="button" data-value="2" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
-          <button id="s3" type="button" data-value="3" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+          <button id="s3" type="button" data-value="3" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
-          <button id="s4" type="button" data-value="4" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+          <button id="s4" type="button" data-value="4" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
-          <button id="s5" type="button" data-value="5" class="btn btn-warning btn-sm star-rating" aria-label="Left Align">
-            <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+          <button id="s5" type="button" data-value="5" class="btn btn-warning btn-sm star-rating btn-grey" aria-label="Left Align">
+            <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
           </button>
           
           <input type="hidden" id="star" />
@@ -200,13 +202,16 @@
 
 
     <% reviews.forEach(function(userProf){  %>
-    <div class="row">
+    <div class="row" >
       <div class="col-sm-7">
         <hr />
-        <div class="review-block">
+        <div class="review-block" style="background-color: rgb(77, 121, 255);">
           <div class="row">
             <div class="col-sm-3">
-              <div class="review-block-name"><a href="#"><%= userProf.by %></a></div>
+              <img class="avatar" src="/cdn/avatars/<%= userProf.by %>.png" />
+              <div class="review-block-name"><a href="#"><%= userProf.by %></a></br>
+              <%=userProf.dateAdded %>
+              </div>
             </div>
             
             <div class="col-sm-9">
@@ -226,7 +231,9 @@
                 <!--<button type="button" class="btn btn-default btn-grey btn-xs" aria-label="Left Align">-->
                 <!--  <span class="glyphicon glyphicon-star" aria-hidden="true"></span>-->
                 <!--</button>-->
-                <%= userProf.rating %>
+                <% for (var i = 0; i < userProf.rating; i++) { %>
+                      <span class="fa fa-heart checked"></span>
+                <% } %>
               </div>
               <div class="review-block-description"><%= userProf.text %></div>
             </div>
