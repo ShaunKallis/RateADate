@@ -11,7 +11,7 @@
     <div class="d-flex flex-column align-items-center w-100">
         <button id="submitBtn1" class="btn btn-outline-danger w-25"> User Sign In </button><br>
 
-        <button id="submitBtn2" class="btn btn-outline-danger w-25"> Admin Sign In </button><br><br>
+        <!--<button id="submitBtn2" class="btn btn-outline-danger w-25"> Admin Sign In </button><br><br>-->
 
         <button id="submitBtn3" class="btn btn-outline-danger w-25"> Create Account </button><br>
     </div>
@@ -20,9 +20,9 @@
         $("#submitBtn1").on("click", function () {
             location.href = "/userLogin";
         });
-        $("#submitBtn2").on("click", function () {
-            location.href = "/adminLogin";
-        });
+        // $("#submitBtn2").on("click", function () {
+        //     location.href = "/adminLogin";
+        // });
         $("#submitBtn3").on("click", function () {
             location.href = "/createAccount";
         });
