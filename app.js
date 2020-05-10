@@ -488,11 +488,6 @@ async function addReview(byUsername, username, rating, textReview) {
         }, { upsert: true });
 }
 
-async function getReviews(username) {
-    const result = await client.db("RateADate").collection("users").find({ "name": username }).toArray();
-    return result;
-}
-
 function get_user_identicon(user_id) {
     let ret = new Identicon(user_id, 480).toString();
     ret = new Buffer.from(ret, 'base64');
@@ -508,53 +503,7 @@ app.get("/searchProduct", isUserAuthenticated, async function (req, res) {
 
 });
 
-app.get("/cart", isUserAuthenticated, async function (req, res) {
-    //   console.log("happens")
-    let items = await getCart(req.session.name);
-    //   console.log(items);
-    let total = 0;
 
-    if (items != null) {
-        items.forEach(function (item) {
-            total += item[1] * item[2]
-        })
-        res.render("cart", { "items": items, "total": total });
-    } else {
-        res.render("cart", { "items": [, ,], "total": total });
-    }
-
-});
-
-app.get("/checkout", isUserAuthenticated, async function (req, res) {
-
-    let categories = await clearCart(req.session.name);
-    //console.log(categories);
-    res.render("checkout", { "categories": categories });
-
-});
-
-// from lab 9 user side of page
-app.get("/products", isUserAuthenticated, async function (req, res) {
-    let rows = await getProduct(req.query.keyword);
-    res.render("products", { "records": rows });
-
-});//product
-
-app.get("/reviews/:id", async function (req, res) {
-    var cUser = req.params.id;
-    let rows = await getReviews(cUser);
-    const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
-    // console.log("userProf: ", userProf);
-    // console.log("data from userProf: ", userProf.reviews);
-    let reviews = await getReviewsFor(cUser);
-
-    res.render("reviews", {
-        "userProf": userProf,
-        "reviews": reviews,
-        "records": rows,
-    });
-
-});//productDetails
 
 //Route for User Profile Page
 app.get("/profile", async function (req, res) {
@@ -581,7 +530,6 @@ app.get("/profile/edit", async function (req, res) {
 app.get("/reviews", async function (req, res) {
     //var cUser = req.cookie.cookieUser;
     var cUser = req.session.name;
-    let rows = await getReviews(cUser);
     const userProf = await client.db("RateADate").collection("users").findOne({ username: cUser });
     // console.log("userProf: ", userProf);
     // console.log("data from userProf: ", userProf.reviews);
@@ -590,14 +538,16 @@ app.get("/reviews", async function (req, res) {
     res.render("reviews", {
         "userProf": userProf,
         "reviews": reviews,
-        "records": rows,
     })
 })
 
 app.post("/addreview", isUserAuthenticated, async function (req, res) {
     const newReview = req.body;
     console.log("review: ", newReview);
-    let rows = await (addReview(req.session.name, newReview.username, newReview.rating, newReview.textReview));
+    await (addReview(req.session.name, newReview.username, newReview.rating, newReview.textReview));
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ "success": 200 }));
 });
 
 //Create Account POST
@@ -660,39 +610,6 @@ async function getReviewsBy(username) {
     return result;
 }
 
-app.get("/api/reviews", async function (req, res) {
-    let result = await getReviewsFor(req.body.username);
-
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(result));
-})
-
-async function setReview(user_for, user_by, rating, text) {
-    let review = await client.db(database_name).collection("reviews").findOne({ "for": user_for, "by": user_by });
-    let review_exists = true;
-
-    if (!review) {
-        review_exists = false;
-        review = {};
-    }
-
-    review.rating = rating;
-    review.text = text;
-
-    if (review_exists) {
-        review = await client.db(database_name).collection("reviews").updateOne(
-            { "for": user_for, "by": user_by },
-            {
-                $set: review
-            });
-    } else {
-        review = await client.db(database_name).collection("reviews").insertOne(review);
-    }
-
-    return review;
-
-}
-
 async function setProfile(username, firstname, lastname, bio, avatar_id) {
     let user = await client.db(database_name).collection("users").findOne({ "username": username });
     if (!user) {
@@ -715,13 +632,6 @@ async function setProfile(username, firstname, lastname, bio, avatar_id) {
 }
 
 
-
-app.post("/setreview_debug", async function (req, res) {
-    let result = await setReview(req.body.for, req.body.by, req.body.rating, req.body.text);
-
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(result));
-})
 
 app.post("/setprofile", isUserAuthenticated, async function (req, res) {
     const new_profile = req.body;
